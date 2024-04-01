@@ -163,5 +163,13 @@ namespace CounterStrikeSharp.API.Core
         /// <param name="manifest">Resource Manifest</param>
         [ListenerName("OnServerPrecacheResources")]
         public delegate void OnServerPrecacheResources(ResourceManifest manifest);
+
+        /// <summary>
+        /// CheckTransmit
+        /// </summary>
+        /// <param name="ppInfo">ppInfo</param>
+        /// <param name="infoCount">infoCount</param>
+        [ListenerName("OnCheckTransmit")]
+        public delegate void OnCheckTransmit(CheckTransmitInfo ppInfo, int infoCount);
     }
 }

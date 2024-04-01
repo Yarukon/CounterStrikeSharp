@@ -61,6 +61,7 @@ IVoiceServer* voiceServer = nullptr;
 CDotNetManager dotnetManager;
 ICvar* cvars = nullptr;
 ISource2Server* server = nullptr;
+ISource2GameEntities* gameEntities = nullptr;
 CGlobalEntityList* globalEntityList = nullptr;
 CounterStrikeSharpMMPlugin* mmPlugin = nullptr;
 SourceHook::Impl::CSourceHookImpl source_hook_impl;

@@ -37,6 +37,7 @@ class IGameEventSystem;
 class CounterStrikeSharpMMPlugin;
 class CGameEntitySystem;
 class IGameEventListener2;
+class ISource2GameEntities;
 
 namespace counterstrikesharp {
 class EntityListener;
@@ -87,6 +88,7 @@ extern ISource2Server *server;
 extern CGlobalEntityList *globalEntityList;
 extern EntityListener entityListener;
 extern CGameEntitySystem *entitySystem;
+extern ISource2GameEntities *gameEntities;
 
 extern EventManager eventManager;
 extern UserMessageManager userMessageManager;

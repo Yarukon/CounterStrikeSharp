@@ -26,6 +26,8 @@
 
 namespace counterstrikesharp {
 
+SH_DECL_HOOK6_void(ISource2GameEntities, CheckTransmit, SH_NOATTRIB, 0, CCheckTransmitInfo**, int, CBitVec<16384>&, const Entity2Networkable_t**, const uint16*, int);
+
 EntityManager::EntityManager() {}
 
 EntityManager::~EntityManager() {}
@@ -37,6 +39,7 @@ void EntityManager::OnAllInitialized()
     on_entity_deleted_callback = globals::callbackManager.CreateCallback("OnEntityDeleted");
     on_entity_parent_changed_callback =
         globals::callbackManager.CreateCallback("OnEntityParentChanged");
+    on_check_transmit_callback = globals::callbackManager.CreateCallback("OnCheckTransmit");
 
     m_pFireOutputInternal = reinterpret_cast<FireOutputInternal>(modules::server->FindSignature(
         globals::gameConfig->GetSignature("CEntityIOOutput_FireOutputInternal")));
@@ -60,15 +63,23 @@ void EntityManager::OnAllInitialized()
         return;
     }
 
+    SH_ADD_HOOK_MEMFUNC(ISource2GameEntities, CheckTransmit, globals::gameEntities, this,
+                        &EntityManager::CheckTransmit, true);
+
     // Listener is added in ServerStartup as entity system is not initialised at this stage.
 }
 
 void EntityManager::OnShutdown()
 {
+    SH_REMOVE_HOOK_MEMFUNC(ISource2GameEntities, CheckTransmit, globals::gameEntities, this,
+                           &EntityManager::CheckTransmit, true);
+
     globals::callbackManager.ReleaseCallback(on_entity_spawned_callback);
     globals::callbackManager.ReleaseCallback(on_entity_created_callback);
     globals::callbackManager.ReleaseCallback(on_entity_deleted_callback);
     globals::callbackManager.ReleaseCallback(on_entity_parent_changed_callback);
+    globals::callbackManager.ReleaseCallback(on_check_transmit_callback);
+
     globals::entitySystem->RemoveListenerEntity(&entityListener);
 }
 
@@ -147,6 +158,21 @@ void EntityManager::UnhookEntityOutput(const char* szClassname, const char* szOu
         if (!pCallbackPair->HasCallbacks()) {
             m_pHookMap.erase(outputKey);
         }
+    }
+}
+
+void EntityManager::CheckTransmit(CCheckTransmitInfo** ppInfoList, int infoCount,
+                                  CBitVec<16384>& unionTransmitEdicts,
+                                  const Entity2Networkable_t** pNetworkables,
+                                  const uint16* pEntityIndicies, int nEntities)
+{
+    auto callback = globals::entityManager.on_check_transmit_callback;
+
+    if (callback && callback->GetFunctionCount()) {
+        callback->ScriptContext().Reset();
+        callback->ScriptContext().Push(ppInfoList);
+        callback->ScriptContext().Push(infoCount);
+        callback->Execute();
     }
 }
 
