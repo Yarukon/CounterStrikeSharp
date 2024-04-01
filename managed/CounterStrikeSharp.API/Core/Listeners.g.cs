@@ -167,9 +167,9 @@ namespace CounterStrikeSharp.API.Core
         /// <summary>
         /// CheckTransmit
         /// </summary>
-        /// <param name="ppInfo">ppInfo</param>
-        /// <param name="infoCount">infoCount</param>
+        /// <param name="info">info</param>
+        /// <param name="playerSlot">playerSlot</param>
         [ListenerName("OnCheckTransmit")]
-        public delegate void OnCheckTransmit(CheckTransmitInfo ppInfo, int infoCount);
+        public delegate void OnCheckTransmit(CheckTransmitInfo info, int playerSlot);
     }
 }

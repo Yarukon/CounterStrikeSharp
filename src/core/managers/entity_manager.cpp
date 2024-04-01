@@ -23,6 +23,7 @@
 
 #include <public/eiface.h>
 #include "scripting/callback_manager.h"
+#include "player_manager.h"
 
 namespace counterstrikesharp {
 
@@ -168,11 +169,23 @@ void EntityManager::CheckTransmit(CCheckTransmitInfo** ppInfoList, int infoCount
 {
     auto callback = globals::entityManager.on_check_transmit_callback;
 
-    if (callback && callback->GetFunctionCount()) {
-        callback->ScriptContext().Reset();
-        callback->ScriptContext().Push(ppInfoList);
-        callback->ScriptContext().Push(infoCount);
-        callback->Execute();
+    for (int i = 0; i < infoCount; ++i)
+    {
+        auto& pInfo = ppInfoList[i];
+        static int offset = globals::gameConfig->GetOffset("CheckTransmitPlayerSlot");
+        int iPlayerSlot = (int) *((uint8*)pInfo + offset);
+        
+        CPlayer* player = globals::playerManager.GetPlayerBySlot(iPlayerSlot);
+        
+        if (player == nullptr || !player->IsConnected())
+            continue;
+
+        if (callback && callback->GetFunctionCount()) {
+            callback->ScriptContext().Reset();
+            callback->ScriptContext().Push(*(uint64*) pInfo);
+            callback->ScriptContext().Push(iPlayerSlot);
+            callback->Execute();
+        }
     }
 }
 

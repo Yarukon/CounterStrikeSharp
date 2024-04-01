@@ -13,19 +13,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
         {
         }
 
-        public unsafe CheckTransmitInfo_Struct** Value => (CheckTransmitInfo_Struct**) this.Handle;
-    }
-
-    [StructLayout(LayoutKind.Explicit, Size = 0x24C)]
-    public struct CheckTransmitInfo_Struct
-    {
-        [FieldOffset(0)]
-        public nint transmitEntity;
-
-        [FieldOffset(8)]
-        public nint transmitAlways;
-
-        [FieldOffset(0x248)]
-        public int playerSlot;
+        public nint transmitEntity => this.Handle;
+        public nint transmitAlways => this.Handle + 0x8;
     }
 }
