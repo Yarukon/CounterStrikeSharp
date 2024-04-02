@@ -14,7 +14,7 @@ jobs:
       buildnumber: ${{ steps.buildnumber.outputs.build_number }}
     steps:
       - name: Generate build number
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/exg_custom' }}
         id: buildnumber
         uses: onyxmueller/build-tag-number@v1
         with:
@@ -124,7 +124,7 @@ jobs:
           path: managed/CounterStrikeSharp.API/bin/Release
 
   publish:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/exg_custom' }}
     permissions:
       contents: write
     needs: ["setup", "build_windows", "build_managed"]
