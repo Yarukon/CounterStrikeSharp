@@ -165,6 +165,18 @@ namespace CounterStrikeSharp.API.Core
         public delegate void OnServerPrecacheResources(ResourceManifest manifest);
 
         /// <summary>
+        /// OnEntityPreThink
+        /// </summary>
+        [ListenerName("OnEntityPreThink")]
+        public delegate void OnEntityPreThink();
+
+        /// <summary>
+        /// OnEntityPostThink
+        /// </summary>
+        [ListenerName("OnEntityPostThink")]
+        public delegate void OnEntityPostThink();
+
+        /// <summary>
         /// CheckTransmit
         /// </summary>
         /// <param name="info">info</param>

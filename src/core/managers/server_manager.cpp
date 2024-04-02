@@ -61,6 +61,9 @@ void ServerManager::OnAllInitialized() {
     on_server_pre_world_update = globals::callbackManager.CreateCallback("OnServerPreWorldUpdate");
 
     on_server_precache_resources = globals::callbackManager.CreateCallback("OnServerPrecacheResources");
+
+    on_entity_pre_think = globals::callbackManager.CreateCallback("OnEntityPreThink");
+    on_entity_post_think = globals::callbackManager.CreateCallback("OnEntityPostThink");
 }
 
 void ServerManager::OnShutdown() {
@@ -88,6 +91,9 @@ void ServerManager::OnShutdown() {
     globals::callbackManager.ReleaseCallback(on_server_pre_world_update);
     
     globals::callbackManager.ReleaseCallback(on_server_precache_resources);
+
+    globals::callbackManager.ReleaseCallback(on_entity_pre_think);
+    globals::callbackManager.ReleaseCallback(on_entity_post_think);
 }
 
 void* ServerManager::GetEconItemSystem()
@@ -211,6 +217,24 @@ void ServerManager::OnPrecacheResources(IEntityResourceManifest* pResourceManife
     if (callback && callback->GetFunctionCount()) {
         callback->ScriptContext().Reset();
         callback->ScriptContext().Push(pResourceManifest);
+        callback->Execute();
+    }
+}
+
+void ServerManager::EntityPreThink()
+{
+    auto callback = globals::serverManager.on_entity_pre_think;
+    if (callback && callback->GetFunctionCount()) {
+        callback->ScriptContext().Reset();
+        callback->Execute();
+    }
+}
+
+void ServerManager::EntityPostThink()
+{
+    auto callback = globals::serverManager.on_entity_post_think;
+    if (callback && callback->GetFunctionCount()) {
+        callback->ScriptContext().Reset();
         callback->Execute();
     }
 }
