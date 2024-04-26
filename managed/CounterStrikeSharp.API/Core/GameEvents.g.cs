@@ -4647,6 +4647,7 @@ namespace CounterStrikeSharp.API.Core
                     set => Set<int>("hitgroup", value);
                 }
 
+                
                 // attacker was in midair
                 public bool Attackerinair 
                 {
