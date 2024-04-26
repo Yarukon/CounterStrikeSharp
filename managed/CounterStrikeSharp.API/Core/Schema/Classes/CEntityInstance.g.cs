@@ -14,8 +14,10 @@ using CounterStrikeSharp.API.Core.Attributes;
 
 namespace CounterStrikeSharp.API.Core;
 
-public partial class CEntityInstance : NativeEntity
+public partial class CEntityInstance : NativeObject
 {
+    public CEntityInstance (IntPtr pointer) : base(pointer) {}
+
 	// m_iszPrivateVScripts
 	[SchemaMember("CEntityInstance", "m_iszPrivateVScripts")]
 	public string PrivateVScripts
