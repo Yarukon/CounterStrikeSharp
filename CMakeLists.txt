@@ -100,8 +100,15 @@ SET(SOURCE_FILES
 if (LINUX)
     # memoverride.cpp is not usable on CMake Windows, cuz CMake default link libraries (seems) always link ucrt.lib
     set(SOURCE_FILES
-        ${SOURCE_FILES}
         libraries/hl2sdk-cs2/public/tier0/memoverride.cpp
+        ${SOURCE_FILES}
+    )
+elseif(WIN32)
+    # hacky way to get new(xxxx) and delete xxxx; working with valve's memory management so it dont crash when using entitykeyvalues
+    # this needed to rework with cmakelist to make use of valve's memoverride.cpp
+    set(SOURCE_FILES
+        src/memoverride.cpp
+        ${SOURCE_FILES}
     )
 endif()
 

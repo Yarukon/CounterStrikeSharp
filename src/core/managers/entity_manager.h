@@ -127,5 +127,5 @@ inline SndOpEventGuid_t(*CBaseEntity_EmitSoundFilter)(IRecipientFilter& filter,
                                                                  CEntityIndex ent,
                                                                  const EmitSound_t& params);
 #endif
-inline void (*CBaseEntity_DispatchSpawn)(CEntityInstance* entity, CEntityKeyValues* keyValues);
+inline void (*CBaseEntity_DispatchSpawn)(CEntityInstance* pEntity, CEntityKeyValues* pEntityKeyValues);
 }  // namespace counterstrikesharp

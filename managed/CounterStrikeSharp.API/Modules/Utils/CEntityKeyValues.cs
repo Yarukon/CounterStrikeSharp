@@ -93,7 +93,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
                 {
                     // Special type handle
                     case KeyValuesType.TYPE_EHANDLE:
-                        valueLists.Add(kv.Value.Get<CounterStrikeSharp.API.Modules.Utils.CEntityHandle>().Raw);
+                        valueLists.Add(kv.Value.Get<CEntityHandle>().Raw);
                         break;
 
                     case KeyValuesType.TYPE_COLOR:
