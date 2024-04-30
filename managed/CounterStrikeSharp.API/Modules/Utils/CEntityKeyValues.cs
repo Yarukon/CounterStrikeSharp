@@ -48,6 +48,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
         public void SetMatrix3x4(string key, Matrix3x4 value) => SetValue<Matrix3x4>(key, KeyValuesType.TYPE_MATRIX3X4, value);
 
         public bool Remove(string key) => keyValues.Remove(key);
+        public void RemoveAll() => keyValues.Clear();
 
         internal void SetValue<T>(string key, KeyValuesType type, object value)
         {
