@@ -26,7 +26,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
         public Vector2? GetVector2D(string key, Vector2? defaultValue = null) => GetValue(key, defaultValue);
         public Vector4? GetVector4D(string key, Vector4? defaultValue = null) => GetValue(key, defaultValue);
         public Vector4? GetQuaternion(string key, Vector4? defaultValue = null) => GetValue(key, defaultValue);
-        public Angle? GetAngle(string key, Angle? defaultValue = null) => GetValue(key, defaultValue);
+        public QAngle? GetAngle(string key, QAngle? defaultValue = null) => GetValue(key, defaultValue);
         public Matrix3x4? GetMatrix3x4(string key, Matrix3x4? defaultValue = null) => GetValue(key, defaultValue);
 
         // Setter
@@ -39,14 +39,14 @@ namespace CounterStrikeSharp.API.Modules.Utils
         public void SetDouble(string key, double value) => SetValue<double>(key, KeyValuesType.TYPE_DOUBLE, value);
         public void SetString(string key, string value) => SetValue<string>(key, KeyValuesType.TYPE_STRING, value);
         public void SetPointer(string key, nint value) => SetValue<nint>(key, KeyValuesType.TYPE_POINTER, value);
-        public void SetStringToken(string key, uint value) => SetValue<uint>(key, KeyValuesType.TYPE_STRING_TOKEN, value); // Essentially is integer
+        public void SetStringToken(string key, uint value) => SetValue<uint>(key, KeyValuesType.TYPE_STRING_TOKEN, value); // Token is integer
         public void SetEHandle(string key, CEntityHandle value) => SetValue<CEntityHandle>(key, KeyValuesType.TYPE_EHANDLE, value);
         public void SetColor(string key, Color value) => SetValue<Color>(key, KeyValuesType.TYPE_COLOR, value);
         public void SetVector(string key, Vector3 value) => SetValue<Vector3>(key, KeyValuesType.TYPE_VECTOR, value);
         public void SetVector2D(string key, Vector2 value) => SetValue<Vector2>(key, KeyValuesType.TYPE_VECTOR2D, value);
         public void SetVector4D(string key, Vector4 value) => SetValue<Vector4>(key, KeyValuesType.TYPE_VECTOR4D, value);
         public void SetQuaternion(string key, Vector4 value) => SetValue<Vector4>(key, KeyValuesType.TYPE_QUATERNION, value); // Same class with Vector4D
-        public void SetAngle(string key, Angle value) => SetValue<Angle>(key, KeyValuesType.TYPE_QANGLE, value);
+        public void SetAngle(string key, QAngle value) => SetValue<QAngle>(key, KeyValuesType.TYPE_QANGLE, value);
         public void SetMatrix3x4(string key, Matrix3x4 value) => SetValue<Matrix3x4>(key, KeyValuesType.TYPE_MATRIX3X4, value);
 
         public bool Remove(string key) => keyValues.Remove(key);
