@@ -5,8 +5,6 @@ namespace CounterStrikeSharp.API.Modules.Utils
 {
     public class CEntityKeyValues
     {
-        internal nint Pointer = 0;
-
         internal Dictionary<string, KeyValueContainer> keyValues = new();
 
         // Getter
@@ -161,14 +159,6 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
             return keyValues.Count;
         }
-
-        public void Create()
-        {
-            int count = Build(out object[] list);
-            Pointer = NativeAPI.CreateEntityKeyvalues(count, list);
-        }
-
-        public nint GetPointer() => Pointer;
 
         internal class KeyValueContainer
         {
