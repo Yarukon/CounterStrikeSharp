@@ -735,6 +735,20 @@ namespace CounterStrikeSharp.API.Core
 			ScriptContext.GlobalScriptContext.CheckErrors();
 			}
 		}
+        public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(pthis);
+			ScriptContext.GlobalScriptContext.Push(inputname);
+			ScriptContext.GlobalScriptContext.Push(activator);
+			ScriptContext.GlobalScriptContext.Push(caller);
+			ScriptContext.GlobalScriptContext.Push(value);
+			ScriptContext.GlobalScriptContext.Push(outputid);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x259E084C);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			}
+		}
 
         public static void DispatchSpawn(IntPtr entity, int count, object[] values){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
@@ -746,6 +760,21 @@ namespace CounterStrikeSharp.API.Core
 				ScriptContext.GlobalScriptContext.Push(obj);
 			}
 			ScriptContext.GlobalScriptContext.SetIdentifier(0xAE01E931);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			}
+		}
+        public static void AddEntityIoEvent(IntPtr ptarget, string inputname, IntPtr activator, IntPtr caller, string value, float delay, int outputid){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(ptarget);
+			ScriptContext.GlobalScriptContext.Push(inputname);
+			ScriptContext.GlobalScriptContext.Push(activator);
+			ScriptContext.GlobalScriptContext.Push(caller);
+			ScriptContext.GlobalScriptContext.Push(value);
+			ScriptContext.GlobalScriptContext.Push(delay);
+			ScriptContext.GlobalScriptContext.Push(outputid);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x4CFDE98A);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
 			}
