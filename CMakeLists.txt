@@ -103,13 +103,6 @@ if (LINUX)
         libraries/hl2sdk-cs2/public/tier0/memoverride.cpp
         ${SOURCE_FILES}
     )
-elseif(WIN32)
-    # hacky way to get new(xxxx) and delete xxxx; working with valve's memory management so it dont crash when using entitykeyvalues
-    # this needed to rework with cmakelist to make use of valve's memoverride.cpp
-    set(SOURCE_FILES
-        src/memoverride.cpp
-        ${SOURCE_FILES}
-    )
 endif()
 
 set(PROTO_DIRS -I${CMAKE_CURRENT_SOURCE_DIR}/libraries/Protobufs/csgo)
