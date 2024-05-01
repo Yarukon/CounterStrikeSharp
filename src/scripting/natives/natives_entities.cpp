@@ -259,10 +259,16 @@ enum KeyValuesType_t : unsigned int
     TYPE_MATRIX3X4
 };
 
-void DispatchSpawn(ScriptContext& scriptContext)
+void DispatchSpawn(ScriptContext& script_context)
 {
-    auto pEntity = scriptContext.GetArgument<CEntityInstance*>(0);
-    auto count = scriptContext.GetArgument<int>(1);
+    if (!CBaseEntity_DispatchSpawn)
+    {
+        script_context.ThrowNativeError("Failed to find signature for \'CBaseEntity_DispatchSpawn\'");
+        return;
+    }
+
+    auto pEntity = script_context.GetArgument<CEntityInstance*>(0);
+    auto count = script_context.GetArgument<int>(1);
 
     if (count == 0) {
         CBaseEntity_DispatchSpawn(pEntity, nullptr);
@@ -272,124 +278,124 @@ void DispatchSpawn(ScriptContext& scriptContext)
     CEntityKeyValues* pEntityKeyValues = new CEntityKeyValues();
     int offset = 2;
     for (int i = 0; i < count; ++i) {
-        const char* key = scriptContext.GetArgument<const char*>(offset);
-        KeyValuesType_t _type = scriptContext.GetArgument<KeyValuesType_t>(offset + 1);
+        const char* key = script_context.GetArgument<const char*>(offset);
+        KeyValuesType_t _type = script_context.GetArgument<KeyValuesType_t>(offset + 1);
         switch (_type) {
         case counterstrikesharp::TYPE_BOOL:
-            pEntityKeyValues->SetBool(key, scriptContext.GetArgument<bool>(offset + 2));
+            pEntityKeyValues->SetBool(key, script_context.GetArgument<bool>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_INT:
-            pEntityKeyValues->SetInt(key, scriptContext.GetArgument<int>(offset + 2));
+            pEntityKeyValues->SetInt(key, script_context.GetArgument<int>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_UINT:
-            pEntityKeyValues->SetUint(key, scriptContext.GetArgument<unsigned int>(offset + 2));
+            pEntityKeyValues->SetUint(key, script_context.GetArgument<unsigned int>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_INT64:
-            pEntityKeyValues->SetInt64(key, scriptContext.GetArgument<long>(offset + 2));
+            pEntityKeyValues->SetInt64(key, script_context.GetArgument<long>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_UINT64:
-            pEntityKeyValues->SetUint64(key, scriptContext.GetArgument<unsigned long>(offset + 2));
+            pEntityKeyValues->SetUint64(key, script_context.GetArgument<unsigned long>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_FLOAT:
-            pEntityKeyValues->SetFloat(key, scriptContext.GetArgument<float>(offset + 2));
+            pEntityKeyValues->SetFloat(key, script_context.GetArgument<float>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_DOUBLE:
-            pEntityKeyValues->SetDouble(key, scriptContext.GetArgument<double>(offset + 2));
+            pEntityKeyValues->SetDouble(key, script_context.GetArgument<double>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_STRING:
-            pEntityKeyValues->SetString(key, ((CUtlString*)new CUtlString(scriptContext.GetArgument<const char*>(offset + 2)))->Get());
+            pEntityKeyValues->SetString(key, ((CUtlString*)new CUtlString(script_context.GetArgument<const char*>(offset + 2)))->Get());
             offset += 3;
             break;
         case counterstrikesharp::TYPE_POINTER:
-            pEntityKeyValues->SetPtr(key, scriptContext.GetArgument<void*>(offset + 2));
+            pEntityKeyValues->SetPtr(key, script_context.GetArgument<void*>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_STRING_TOKEN:
-            pEntityKeyValues->SetStringToken(key, scriptContext.GetArgument<unsigned int>(offset + 2));
+            pEntityKeyValues->SetStringToken(key, script_context.GetArgument<unsigned int>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_EHANDLE:
-            pEntityKeyValues->SetEHandle(key, scriptContext.GetArgument<unsigned int>(offset + 2));
+            pEntityKeyValues->SetEHandle(key, script_context.GetArgument<unsigned int>(offset + 2));
             offset += 3;
             break;
         case counterstrikesharp::TYPE_COLOR: {
-            char r = scriptContext.GetArgument<char>(offset + 2);
-            char g = scriptContext.GetArgument<char>(offset + 3);
-            char b = scriptContext.GetArgument<char>(offset + 4);
-            char a = scriptContext.GetArgument<char>(offset + 5);
+            char r = script_context.GetArgument<char>(offset + 2);
+            char g = script_context.GetArgument<char>(offset + 3);
+            char b = script_context.GetArgument<char>(offset + 4);
+            char a = script_context.GetArgument<char>(offset + 5);
 
             pEntityKeyValues->SetColor(key, Color(r, g, b, a));
             offset += 6;
             break;
         }
         case counterstrikesharp::TYPE_VECTOR: {
-            float x = scriptContext.GetArgument<float>(offset + 2);
-            float y = scriptContext.GetArgument<float>(offset + 3);
-            float z = scriptContext.GetArgument<float>(offset + 4);
+            float x = script_context.GetArgument<float>(offset + 2);
+            float y = script_context.GetArgument<float>(offset + 3);
+            float z = script_context.GetArgument<float>(offset + 4);
 
             pEntityKeyValues->SetVector(key, Vector(x, y, z));
             offset += 5;
             break;
         }
         case counterstrikesharp::TYPE_VECTOR2D: {
-            float x = scriptContext.GetArgument<float>(offset + 2);
-            float y = scriptContext.GetArgument<float>(offset + 3);
+            float x = script_context.GetArgument<float>(offset + 2);
+            float y = script_context.GetArgument<float>(offset + 3);
 
             pEntityKeyValues->SetVector2D(key, Vector2D(x, y));
             offset += 4;
             break;
         }
         case counterstrikesharp::TYPE_VECTOR4D: {
-            float x = scriptContext.GetArgument<float>(offset + 2);
-            float y = scriptContext.GetArgument<float>(offset + 3);
-            float z = scriptContext.GetArgument<float>(offset + 4);
-            float w = scriptContext.GetArgument<float>(offset + 5);
+            float x = script_context.GetArgument<float>(offset + 2);
+            float y = script_context.GetArgument<float>(offset + 3);
+            float z = script_context.GetArgument<float>(offset + 4);
+            float w = script_context.GetArgument<float>(offset + 5);
 
             pEntityKeyValues->SetVector4D(key, Vector4D(x, y, z, w));
             offset += 6;
             break;
         }
         case counterstrikesharp::TYPE_QUATERNION: {
-            float x = scriptContext.GetArgument<float>(offset + 2);
-            float y = scriptContext.GetArgument<float>(offset + 3);
-            float z = scriptContext.GetArgument<float>(offset + 4);
-            float w = scriptContext.GetArgument<float>(offset + 5);
+            float x = script_context.GetArgument<float>(offset + 2);
+            float y = script_context.GetArgument<float>(offset + 3);
+            float z = script_context.GetArgument<float>(offset + 4);
+            float w = script_context.GetArgument<float>(offset + 5);
 
             pEntityKeyValues->SetQuaternion(key, Quaternion(x, y, z, w));
             offset += 6;
             break;
         }
         case counterstrikesharp::TYPE_QANGLE: {
-            float x = scriptContext.GetArgument<float>(offset + 2);
-            float y = scriptContext.GetArgument<float>(offset + 3);
-            float z = scriptContext.GetArgument<float>(offset + 4);
+            float x = script_context.GetArgument<float>(offset + 2);
+            float y = script_context.GetArgument<float>(offset + 3);
+            float z = script_context.GetArgument<float>(offset + 4);
 
             pEntityKeyValues->SetQAngle(key, QAngle(x, y, z));
             offset += 5;
             break;
         }
         case counterstrikesharp::TYPE_MATRIX3X4: {
-            float m11 = scriptContext.GetArgument<float>(offset + 2);
-            float m12 = scriptContext.GetArgument<float>(offset + 3);
-            float m13 = scriptContext.GetArgument<float>(offset + 4);
-            float m14 = scriptContext.GetArgument<float>(offset + 5);
+            float m11 = script_context.GetArgument<float>(offset + 2);
+            float m12 = script_context.GetArgument<float>(offset + 3);
+            float m13 = script_context.GetArgument<float>(offset + 4);
+            float m14 = script_context.GetArgument<float>(offset + 5);
 
-            float m21 = scriptContext.GetArgument<float>(offset + 6);
-            float m22 = scriptContext.GetArgument<float>(offset + 7);
-            float m23 = scriptContext.GetArgument<float>(offset + 8);
-            float m24 = scriptContext.GetArgument<float>(offset + 9);
+            float m21 = script_context.GetArgument<float>(offset + 6);
+            float m22 = script_context.GetArgument<float>(offset + 7);
+            float m23 = script_context.GetArgument<float>(offset + 8);
+            float m24 = script_context.GetArgument<float>(offset + 9);
 
-            float m31 = scriptContext.GetArgument<float>(offset + 10);
-            float m32 = scriptContext.GetArgument<float>(offset + 11);
-            float m33 = scriptContext.GetArgument<float>(offset + 12);
-            float m34 = scriptContext.GetArgument<float>(offset + 13);
+            float m31 = script_context.GetArgument<float>(offset + 10);
+            float m32 = script_context.GetArgument<float>(offset + 11);
+            float m33 = script_context.GetArgument<float>(offset + 12);
+            float m34 = script_context.GetArgument<float>(offset + 13);
 
             pEntityKeyValues->SetMatrix3x4(
                 key, matrix3x4_t(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34));
