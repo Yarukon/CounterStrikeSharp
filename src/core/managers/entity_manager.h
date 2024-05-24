@@ -50,10 +50,6 @@ public:
     void OnShutdown() override;
     void HookEntityOutput(const char* szClassname, const char* szOutput, CallbackT fnCallback, HookMode mode);
     void UnhookEntityOutput(const char* szClassname, const char* szOutput, CallbackT fnCallback, HookMode mode);
-    void CheckTransmit(CCheckTransmitInfo** ppInfoList, int infoCount,
-                       CBitVec<16384>& unionTransmitEdicts,
-                       const Entity2Networkable_t** pNetworkables, const uint16* pEntityIndicies,
-                       int nEntities);
     CEntityListener entityListener;
     std::map<OutputKey_t, CallbackPair*> m_pHookMap;
 private:

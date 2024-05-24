@@ -156,7 +156,6 @@ namespace CounterStrikeSharp.API.Core
         [ListenerName("OnServerPreWorldUpdate")]
         public delegate void OnServerPreWorldUpdate(bool simulating);
 
-
         /// <summary>
         /// Called when the server precaching resources (only when initial startup / changing map).
         /// </summary>
@@ -175,13 +174,5 @@ namespace CounterStrikeSharp.API.Core
         /// </summary>
         [ListenerName("OnEntityPostThink")]
         public delegate void OnEntityPostThink();
-
-        /// <summary>
-        /// CheckTransmit
-        /// </summary>
-        /// <param name="info">info</param>
-        /// <param name="playerSlot">playerSlot</param>
-        [ListenerName("OnCheckTransmit")]
-        public delegate void OnCheckTransmit(CheckTransmitInfo info, int playerSlot);
     }
 }
