@@ -55,10 +55,13 @@ void EventManager::OnGameLoopInitialized()
 
 void EventManager::OnAllInitialized()
 {
-    SH_ADD_HOOK(IGameEventManager2, FireEvent, globals::gameEventManager,
-                SH_MEMBER(this, &EventManager::OnFireEvent), false);
-    SH_ADD_HOOK(IGameEventManager2, FireEvent, globals::gameEventManager,
-                SH_MEMBER(this, &EventManager::OnFireEventPost), true);
+    
+}
+
+void EventManager::OnAllInitialized_Post()
+{
+    SH_ADD_HOOK(IGameEventManager2, FireEvent, globals::gameEventManager, SH_MEMBER(this, &EventManager::OnFireEvent), false);
+    SH_ADD_HOOK(IGameEventManager2, FireEvent, globals::gameEventManager, SH_MEMBER(this, &EventManager::OnFireEventPost), true);
 }
 
 void EventManager::OnShutdown()

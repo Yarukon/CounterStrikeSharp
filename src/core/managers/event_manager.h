@@ -84,6 +84,7 @@ class EventManager : public IGameEventListener2, public GlobalClass
     // GlobalClass
     void OnShutdown() override;
     void OnAllInitialized() override;
+    void OnAllInitialized_Post() override;
     void OnStartup() override;
     void OnGameLoopInitialized() override;
 

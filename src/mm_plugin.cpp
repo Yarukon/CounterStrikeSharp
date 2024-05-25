@@ -96,6 +96,7 @@ bool CounterStrikeSharpMMPlugin::Load(PluginId id, ISmmAPI* ismm, char* error, s
 
     CSSHARP_CORE_INFO("Initializing");
 
+    GET_V_IFACE_CURRENT(GetEngineFactory, globals::engineServer2, IVEngineServer2, SOURCE2ENGINETOSERVER_INTERFACE_VERSION);
     GET_V_IFACE_CURRENT(GetEngineFactory, globals::engine, IVEngineServer,
                         INTERFACEVERSION_VENGINESERVER);
     GET_V_IFACE_CURRENT(GetEngineFactory, globals::cvars, ICvar, CVAR_INTERFACE_VERSION);
