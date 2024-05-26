@@ -20,8 +20,12 @@ public partial class CBaseEntity
             Handle, position.Handle, angles.Handle, velocity.Handle);
     }
 
+    /// <summary>Compatibility function for those old plugins</summary>
     /// <exception cref="InvalidOperationException">Entity is not valid</exception>
-    public void DispatchSpawn(CEntityKeyValues? keyValues = null)
+    public void DispatchSpawn() => DispatchSpawn(null);
+
+    /// <exception cref="InvalidOperationException">Entity is not valid</exception>
+    public void DispatchSpawn(CEntityKeyValues? keyValues)
     {
         Guard.IsValidEntity(this);
 
