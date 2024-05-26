@@ -1,3 +1,4 @@
+// clang-format off
 #include "mm_plugin.h"
 #include "core/globals.h"
 #include "core/managers/player_manager.h"
@@ -26,6 +27,7 @@
 #include <public/entity2/entitysystem.h>
 
 #include <funchook.h>
+// clang-format on
 
 namespace counterstrikesharp {
 
@@ -130,7 +132,9 @@ void Initialize()
 void DetourGameEventManagerInit(IGameEventManager2* pGameEventManager)
 {
     gameEventManager = pGameEventManager;
+
     GameEventManagerInit(pGameEventManager);
+
     eventManager.OnAllInitialized_Post();
 }
 

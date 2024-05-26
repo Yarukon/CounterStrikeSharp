@@ -37,14 +37,12 @@ class CUtlString;
 #include <public/igameevents.h>
 
 #include <map>
-#include <string>
 #include <stack>
+#include <string>
 
 #include "core/global_listener.h"
 #include "core/globals.h"
 #include "scripting/script_engine.h"
-
-
 
 namespace counterstrikesharp {
 class ScriptCallback;
@@ -63,11 +61,13 @@ struct EventHook
     std::string m_Name;
 };
 
-struct EventOverride {
-  bool m_bDontBroadcast;
+struct EventOverride
+{
+    bool m_bDontBroadcast;
 };
 
-struct PendingEventHook {
+struct PendingEventHook
+{
     std::string m_Name;
     counterstrikesharp::CallbackT m_fnCallback;
     bool m_bPost;
@@ -100,8 +100,8 @@ class EventManager : public IGameEventListener2, public GlobalClass
 
     std::map<std::string, EventHook*> m_hooksMap;
 
-    std::stack<EventHook *> m_EventStack;
-    std::stack<IGameEvent *> m_EventCopies;
+    std::stack<EventHook*> m_EventStack;
+    std::stack<IGameEvent*> m_EventCopies;
     std::stack<PendingEventHook> m_PendingHooks;
 };
 
