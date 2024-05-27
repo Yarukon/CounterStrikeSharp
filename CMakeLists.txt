@@ -97,7 +97,8 @@ set(SOURCE_FILES
     src/core/game_system.h
     src/core/game_system.cpp
     src/core/recipientfilter.h
-    src/core/emitsound_t.h)
+    src/core/sndopeventguid.h
+    src/core/soundeventparam.h)
 
 set(PROTO_DIRS -I${CMAKE_CURRENT_SOURCE_DIR}/libraries/Protobufs/csgo)
 file(GLOB PROTOS "${CMAKE_CURRENT_SOURCE_DIR}/libraries/Protobufs/csgo/*.proto")

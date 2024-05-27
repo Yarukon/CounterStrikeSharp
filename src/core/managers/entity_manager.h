@@ -27,7 +27,9 @@
 
 #include <variant.h>
 
-#include "core/emitsound_t.h"
+#include "core/sndopeventguid.h"
+#include "core/soundeventparam.h"
+#include "core/game_system.h"
 
 namespace counterstrikesharp {
 class ScriptCallback;
@@ -114,15 +116,21 @@ static void DetourFireOutputInternal(CEntityIOOutput* const pThis, CEntityInstan
 
 static FireOutputInternal m_pFireOutputInternal = nullptr;
 
-#ifdef _WIN32
-inline void(__fastcall* CBaseEntity_EmitSoundFilter)(SndOpEventGuid_t& guid, IRecipientFilter& filter,
-                                                                 CEntityIndex ent,
-                                                                 const EmitSound_t& params);
-#else
-inline SndOpEventGuid_t(*CBaseEntity_EmitSoundFilter)(IRecipientFilter& filter,
-                                                                 CEntityIndex ent,
-                                                                 const EmitSound_t& params);
-#endif
+inline void (*CSoundOpGameSystem_StartSoundEvent)(void* pSoundOpGameSystem,
+                                                  SndOpEventGuid_t* pSndOpEventGuid,
+                                                  IRecipientFilter* pFilter,
+                                                  const char* pszSoundName,
+                                                  uint entityIndex,
+                                                  short unk0,
+                                                  double flSoundTime);
+inline bool (*CSoundOpGameSystem_SetSoundEventParam)(IGameSystem* pSoundOpGameSystem,
+                                  IRecipientFilter* pFilter,
+                                  SndOpEventGuid_t sndOpEventGuid,
+                                  const char* pszParamName,
+                                  SoundEventParamFloat* pParamValue,
+                                  ushort a6,
+                                  char a7);
+
 inline void (*CBaseEntity_DispatchSpawn)(CEntityInstance* pEntity, CEntityKeyValues* pEntityKeyValues);
 
 // Do it in here because i didn't found a good place to do this

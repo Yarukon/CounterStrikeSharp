@@ -12,7 +12,7 @@ GET_PLAYER_AUTHORIZED_STEAMID: slot:int -> uint64
 GET_PLAYER_IP_ADDRESS: slot:int -> string
 HOOK_ENTITY_OUTPUT: classname:string, outputName:string, callback:func, mode:HookMode -> void
 UNHOOK_ENTITY_OUTPUT: classname:string, outputName:string, callback:func, mode:HookMode -> void
-EMIT_SOUND_FILTER: entIndex:uint, soundName:string, soundLevel:soundlevel_t, pitch:int, volume:float, channel:int, soundFlags:int, suppliedCustomFilter:bool, recipientsCount:int, recipients:object[] -> void
+EMIT_SOUND: entIndex:uint, soundName:string, pitch:float, volume:float, suppliedCustomFilter:bool, recipientsCount:int, recipients:object[] -> void
 DISPATCH_SPAWN: entity:pointer, count:int, values:object[] -> void
 ACCEPT_INPUT: pThis:pointer, inputName:string, activator:pointer, caller:pointer, value:string, outputID:int -> void
 ADD_ENTITY_IO_EVENT: pTarget:pointer, inputName:string, activator:pointer, caller:pointer, value:string, delay:float, outputID:int -> void

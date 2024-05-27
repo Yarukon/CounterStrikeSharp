@@ -240,11 +240,18 @@
       "linux": 2
     }
   },
-  "CBaseEntity_EmitSoundFilter": {
+  "CSoundOpGameSystem_StartSoundEvent": {
     "signatures": {
       "library": "server",
-      "windows": "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 48 89 7C 24 20 41 56 48 83 EC ? 48 8B EA 4C 8B F1",
-      "linux": "55 48 89 E5 41 57 41 56 49 89 D6 41 55 41 89 F5 41 54 49 89 FC 53 48 83 EC ? 48"
+      "windows": "E8 ? ? ? ? 48 ? ? 48 ? ? E8 ? ? ? ? 45 ? ? C7 44 24",
+      "linux": "I dont care"
+    }
+  },
+  "CSoundOpGameSystem_SetSoundEventParam": {
+    "signatures": {
+      "library": "server",
+      "windows": "48 89 5C 24 ? 48 89 6C 24 ? 56 57 41 ? 48 ? ? ? 41 ? ? ? 4C",
+      "linux": "I dont care"
     }
   }
 }

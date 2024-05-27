@@ -458,7 +458,21 @@ void* CModule::FindSignature(const char* signature)
         return nullptr;
     }
 
-    return this->FindSignature(pData);
+    uintptr_t location = (uintptr_t) this->FindSignature(pData);
+
+    // If its nullptr then return directly, don't continue
+    if (!location) return (void*) location;
+
+    unsigned char insnByte = *(unsigned char*) location;
+
+    // JMP/CALL sub_xxxxxxxx
+    if (insnByte == 0xE8 || insnByte == 0xE9)
+    {
+        int jumpOffset = *(int*) (location + 1);
+        location = location + 5 + jumpOffset;
+    }
+
+    return (void*) location;
 }
 
 void* CModule::FindSignature(const std::vector<int16_t>& sigBytes)

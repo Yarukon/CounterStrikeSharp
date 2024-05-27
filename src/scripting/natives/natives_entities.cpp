@@ -29,6 +29,8 @@
 #include "core/recipientfilter.h"
 #include "entitykeyvalues.h"
 
+#include "core/game_system.h"
+
 namespace counterstrikesharp {
 
 CEntityInstance* GetEntityFromIndex(ScriptContext& script_context)
@@ -220,45 +222,63 @@ void UnhookEntityOutput(ScriptContext& script_context)
     globals::entityManager.UnhookEntityOutput(szClassname, szOutput, callback, mode);
 }
 
-void EmitSoundFilter(ScriptContext& script_context)
+void EmitSound(ScriptContext& script_context)
 {
+    if (!CSoundOpGameSystem_StartSoundEvent)
+    {
+        script_context.ThrowNativeError("Failed to find signature for \'CSoundOpGameSystem_StartSoundEvent\'");
+        return;
+    }
+
+    if (!CSoundOpGameSystem_SetSoundEventParam)
+    {
+        script_context.ThrowNativeError("Failed to find signature for \'CSoundOpGameSystem_SetSoundEventParam\'");
+        return;
+    }
+
+    IGameSystem* pSoundOpGameSystem = CBaseGameSystemFactory::GetGlobalPtrByName("SoundOpGameSystem");
+    if (!pSoundOpGameSystem)
+    {
+        script_context.ThrowNativeError("Failed to locate \'SoundOpGameSystem\'");
+        return;
+    }
+
     auto entIndex = script_context.GetArgument<unsigned int>(0);
     auto soundName = script_context.GetArgument<const char*>(1);
-    auto soundLvl = script_context.GetArgument<soundlevel_t>(2);
-    auto pitch = script_context.GetArgument<int>(3);
-    auto volume = script_context.GetArgument<float>(4);
-    auto channel = script_context.GetArgument<int>(5);
-    auto soundFlags = script_context.GetArgument<int>(6);
-    auto suppliedCustomFilter = script_context.GetArgument<bool>(7);
+    auto pitch = script_context.GetArgument<float>(2);
+    auto volume = script_context.GetArgument<float>(3);
+    auto suppliedCustomFilter = script_context.GetArgument<bool>(4);
 
     CRecipientFilter filter;
-    EmitSound_t params;
-
-    params.m_pSoundName = soundName;
-    params.m_SoundLevel = soundLvl;
-    params.m_nPitch = pitch;
-    params.m_flVolume = volume;
-    params.m_nChannel = channel;
-    params.m_nFlags = soundFlags;
     
     // If managed side defined recipient players, add them
     if (suppliedCustomFilter)
     {
-        auto recipientCount = script_context.GetArgument<int>(8);
+        auto recipientCount = script_context.GetArgument<int>(5);
 
         for (int i = 0; i < recipientCount; ++i)
-            filter.AddRecipient(script_context.GetArgument<int>(9 + i));
+            filter.AddRecipient(script_context.GetArgument<int>(6 + i));
     } else // else we add all the valid players into filter
     {
         filter.AddAllPlayers();
     }
 
-#ifdef _WIN32
     SndOpEventGuid_t guid;
-    CBaseEntity_EmitSoundFilter(guid, filter, CEntityIndex(entIndex), params);
-#else
-    SndOpEventGuid_t guid = CBaseEntity_EmitSoundFilter(filter, CEntityIndex(entIndex), params);
-#endif
+    CSoundOpGameSystem_StartSoundEvent(pSoundOpGameSystem, &guid, &filter, soundName, entIndex, -1, 0);
+
+    SoundEventParamFloat _pitch = SoundEventParamFloat(pitch);
+    bool result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "pitch", &_pitch, 0, 0);
+    if (!result)
+    {
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam (%s, %s, %.2f) | GUID %d | HASH %x", soundName, "pitch", pitch, guid.m_nGuid, guid.m_hStackHash);
+    }
+
+    SoundEventParamFloat _volume = SoundEventParamFloat(volume);
+    result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "volume", &_volume, 0, 0);
+    if (!result)
+    {
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam (%s, %s, %.2f) | GUID %d | HASH %x", soundName, "volume", volume, guid.m_nGuid, guid.m_hStackHash);
+    }
 }
 
 enum KeyValuesType_t : unsigned int
@@ -488,7 +508,7 @@ REGISTER_NATIVES(entities, {
     ScriptEngine::RegisterNativeHandler("GET_PLAYER_IP_ADDRESS", GetPlayerIpAddress);
     ScriptEngine::RegisterNativeHandler("HOOK_ENTITY_OUTPUT", HookEntityOutput);
     ScriptEngine::RegisterNativeHandler("UNHOOK_ENTITY_OUTPUT", UnhookEntityOutput);
-    ScriptEngine::RegisterNativeHandler("EMIT_SOUND_FILTER", EmitSoundFilter);
+    ScriptEngine::RegisterNativeHandler("EMIT_SOUND", EmitSound);
     ScriptEngine::RegisterNativeHandler("DISPATCH_SPAWN", DispatchSpawn);
     ScriptEngine::RegisterNativeHandler("ACCEPT_INPUT", AcceptInput);
     ScriptEngine::RegisterNativeHandler("ADD_ENTITY_IO_EVENT", AddEntityIOEvent);

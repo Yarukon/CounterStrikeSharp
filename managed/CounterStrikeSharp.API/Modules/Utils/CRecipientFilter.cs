@@ -17,7 +17,7 @@ namespace CounterStrikeSharp.API.Modules.Utils;
 
 /// <summary>
 /// A generic filter for determining whom to send message/sounds etc.
-/// to and providing a bit of additional state information
+/// to and providing a bit of additional state information.
 /// </summary>
 public class CRecipientFilter
 {

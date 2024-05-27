@@ -247,5 +247,21 @@ namespace CounterStrikeSharp.API
             entity.LastNetworkChange = Server.CurrentTime;
             entity.IsSteadyState.Clear();
         }
+
+        /// <summary>
+        /// Plays a sound.
+        /// </summary>
+        /// <param name="index">The entity to emit the sound from, 0 Plays sound on the world (position set to 0, 0, 0)</param>
+        /// <param name="soundName">The sound to play. This should be a sound script name, file path is not supported.</param>
+        /// <param name="pitch">The pitch applied to the sound. 1.0 means the pitch is not changed.</param>
+        /// <param name="volume">The volume of the sound.</param>
+        /// <param name="filter">If set, the sound will only be networked to the clients in the filter.</param>
+        public static void EmitSound(uint index, string soundName, float pitch = 1f, float volume = 1f, CRecipientFilter? filter = null)
+        {
+            if (filter != null)
+                NativeAPI.EmitSound(index, soundName, pitch, volume, true, filter.GetRecipientCount(), filter.GetRecipientsArray());
+            else
+                NativeAPI.EmitSound(index, soundName, pitch, volume, false, 0, Array.Empty<object>());
+        }
     }
 }

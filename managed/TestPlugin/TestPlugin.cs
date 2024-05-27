@@ -563,7 +563,7 @@ namespace TestPlugin
 
             CRecipientFilter filter = new();
             filter.AddRecipient(player.Slot);
-            player.PlayerPawn.Value.EmitSound("sas.negative01", soundlevel_t.SNDLVL_NONE, 100, 1, 2, 0, filter);
+            player.PlayerPawn.Value?.EmitSound("sas.negative01", 1f, 1f, filter);
         }
 
         private HookResult GenericEventHandler<T>(T @event, GameEventInfo info) where T : GameEvent

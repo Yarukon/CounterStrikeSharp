@@ -41,7 +41,8 @@ void EntityManager::OnAllInitialized()
     m_pFireOutputInternal = reinterpret_cast<FireOutputInternal>(modules::server->FindSignature(
         globals::gameConfig->GetSignature("CEntityIOOutput_FireOutputInternal")));
 
-    if (m_pFireOutputInternal == nullptr) {
+    if (m_pFireOutputInternal == nullptr)
+    {
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'CEntityIOOutput_FireOutputInternal\'");
         return;
     }
@@ -49,7 +50,8 @@ void EntityManager::OnAllInitialized()
     CBaseEntity_DispatchSpawn = (decltype(CBaseEntity_DispatchSpawn))((modules::server->FindSignature(
             globals::gameConfig->GetSignature("CBaseEntity_DispatchSpawn"))));
 
-    if (!CBaseEntity_DispatchSpawn) {
+    if (!CBaseEntity_DispatchSpawn)
+    {
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'CBaseEntity_DispatchSpawn\'");
     }
 
@@ -73,14 +75,20 @@ void EntityManager::OnAllInitialized()
     funchook_prepare(m_hook, (void**)&m_pFireOutputInternal, (void*)&DetourFireOutputInternal);
     funchook_install(m_hook, 0);
 
-    CBaseEntity_EmitSoundFilter =
-        (decltype(CBaseEntity_EmitSoundFilter))(modules::server->FindSignature(
-    globals::gameConfig->GetSignature("CBaseEntity_EmitSoundFilter")));
+    CSoundOpGameSystem_StartSoundEvent = (decltype(CSoundOpGameSystem_StartSoundEvent))(modules::server->FindSignature(
+    globals::gameConfig->GetSignature("CSoundOpGameSystem_StartSoundEvent")));
 
-    if (!CBaseEntity_EmitSoundFilter) {
-        CSSHARP_CORE_CRITICAL(
-            "Failed to find signature for \'CBaseEntity_EmitSoundFilter\'");
-        return;
+    if (!CSoundOpGameSystem_StartSoundEvent)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CSoundOpGameSystem_StartSoundEvent\'");
+    }
+
+    CSoundOpGameSystem_SetSoundEventParam = (decltype(CSoundOpGameSystem_SetSoundEventParam))(modules::server->FindSignature(
+        globals::gameConfig->GetSignature("CSoundOpGameSystem_SetSoundEventParam")));
+
+    if (!CSoundOpGameSystem_SetSoundEventParam)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CSoundOpGameSystem_SetSoundEventParam\'");
     }
 
     // Listener is added in ServerStartup as entity system is not initialised at this stage.

@@ -714,37 +714,20 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
-        public static void EmitSoundFilter(uint entindex, string soundname, soundlevel_t soundlevel, int pitch, float volume, int channel, int soundflags, bool suppliedCustomFilter, int recipientscount, object[] recipients){
+        public static void EmitSound(uint entindex, string soundname, float pitch, float volume, bool suppliedcustomfilter, int recipientscount, object[] recipients){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
 			ScriptContext.GlobalScriptContext.Push(entindex);
 			ScriptContext.GlobalScriptContext.Push(soundname);
-			ScriptContext.GlobalScriptContext.Push(soundlevel);
 			ScriptContext.GlobalScriptContext.Push(pitch);
 			ScriptContext.GlobalScriptContext.Push(volume);
-			ScriptContext.GlobalScriptContext.Push(channel);
-			ScriptContext.GlobalScriptContext.Push(soundflags);
-			ScriptContext.GlobalScriptContext.Push(suppliedCustomFilter);
+			ScriptContext.GlobalScriptContext.Push(suppliedcustomfilter);
 			ScriptContext.GlobalScriptContext.Push(recipientscount);
 			foreach (var obj in recipients)
 			{
 				ScriptContext.GlobalScriptContext.Push(obj);
 			}
-			ScriptContext.GlobalScriptContext.SetIdentifier(0x43C4A2B3);
-			ScriptContext.GlobalScriptContext.Invoke();
-			ScriptContext.GlobalScriptContext.CheckErrors();
-			}
-		}
-        public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
-			lock (ScriptContext.GlobalScriptContext.Lock) {
-			ScriptContext.GlobalScriptContext.Reset();
-			ScriptContext.GlobalScriptContext.Push(pthis);
-			ScriptContext.GlobalScriptContext.Push(inputname);
-			ScriptContext.GlobalScriptContext.Push(activator);
-			ScriptContext.GlobalScriptContext.Push(caller);
-			ScriptContext.GlobalScriptContext.Push(value);
-			ScriptContext.GlobalScriptContext.Push(outputid);
-			ScriptContext.GlobalScriptContext.SetIdentifier(0x259E084C);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0xCFB9CACC);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
 			}
@@ -764,6 +747,22 @@ namespace CounterStrikeSharp.API.Core
 			ScriptContext.GlobalScriptContext.CheckErrors();
 			}
 		}
+
+        public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(pthis);
+			ScriptContext.GlobalScriptContext.Push(inputname);
+			ScriptContext.GlobalScriptContext.Push(activator);
+			ScriptContext.GlobalScriptContext.Push(caller);
+			ScriptContext.GlobalScriptContext.Push(value);
+			ScriptContext.GlobalScriptContext.Push(outputid);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x259E084C);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			}
+		}
+
         public static void AddEntityIoEvent(IntPtr ptarget, string inputname, IntPtr activator, IntPtr caller, string value, float delay, int outputid){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
@@ -1162,10 +1161,10 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
-        public static void RemoveAllNetworkVectorElements(IntPtr vec){
+        public static void RemoveAllNetworkVectorElements(IntPtr networkvector){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
-			ScriptContext.GlobalScriptContext.Push(vec);
+			ScriptContext.GlobalScriptContext.Push(networkvector);
 			ScriptContext.GlobalScriptContext.SetIdentifier(0x67206C08);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
