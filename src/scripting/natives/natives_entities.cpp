@@ -270,14 +270,14 @@ void EmitSound(ScriptContext& script_context)
     bool result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "pitch", &_pitch, 0, 0);
     if (!result)
     {
-        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam (%s, %s, %.2f) | GUID %d | HASH %x", soundName, "pitch", pitch, guid.m_nGuid, guid.m_hStackHash);
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "pitch", pitch, guid.m_nGuid, guid.m_hStackHash);
     }
 
     SoundEventParamFloat _volume = SoundEventParamFloat(volume);
     result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "volume", &_volume, 0, 0);
     if (!result)
     {
-        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam (%s, %s, %.2f) | GUID %d | HASH %x", soundName, "volume", volume, guid.m_nGuid, guid.m_hStackHash);
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "volume", volume, guid.m_nGuid, guid.m_hStackHash);
     }
 }
 
