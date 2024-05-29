@@ -25,15 +25,20 @@ public partial class CBaseEntity
     public void DispatchSpawn() => DispatchSpawn(null);
 
     /// <exception cref="InvalidOperationException">Entity is not valid</exception>
-    public void DispatchSpawn(CEntityKeyValues? keyValues)
+    public unsafe void DispatchSpawn(CEntityKeyValues? keyValues)
     {
         Guard.IsValidEntity(this);
 
         if (keyValues != null)
         {
-            int count = keyValues.Build(out nint ptr);
-            NativeAPI.DispatchSpawn(this.Handle, count, ptr);
-            keyValues.Free();
+            if (keyValues.Count() > 0)
+            {
+                KeyValuesEntry** entries = stackalloc KeyValuesEntry*[keyValues.Count()];
+                keyValues.Build(entries);
+                NativeAPI.DispatchSpawn(this.Handle, keyValues.Count(), (nint) entries);
+                keyValues.Free();
+            } else
+                NativeAPI.DispatchSpawn(this.Handle, 0, 0);
         }
         else
             NativeAPI.DispatchSpawn(this.Handle, 0, 0);

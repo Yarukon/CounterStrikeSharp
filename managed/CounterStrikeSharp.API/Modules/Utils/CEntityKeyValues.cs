@@ -10,7 +10,6 @@ namespace CounterStrikeSharp.API.Modules.Utils
     {
         internal Dictionary<string, KeyValueContainer> KeyValues = new();
 
-        internal nint ArrayPtr = 0;
         internal List<nint> KeyValuePtrs = [];
         internal List<nint> StringPtrs = [];
 
@@ -56,6 +55,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
         public bool Remove(string key) => KeyValues.Remove(key);
         public void RemoveAll() => KeyValues.Clear();
+        public int Count() => KeyValues.Count;
 
         internal void SetValue<T>(string key, KeyValuesType type, object value)
         {
@@ -82,17 +82,8 @@ namespace CounterStrikeSharp.API.Modules.Utils
         public static readonly byte[] Zero = new byte[60];
 
         // Build keyvalues and passthrough to C++ side
-        internal unsafe int Build(out nint result)
+        internal unsafe void Build(KeyValuesEntry** entries)
         {
-            if (this.KeyValues.Count == 0)
-            {
-                result = 0;
-                return 0;
-            }
-
-            // Alloc array
-            ArrayPtr = Marshal.AllocHGlobal(8 * this.KeyValues.Count);
-
             int arrayOffset = 0;
             foreach(KeyValuePair<string, KeyValueContainer> container in this.KeyValues)
             {
@@ -101,9 +92,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
                 // Alloc KeyValue entry
                 nint kvPtr = Marshal.AllocHGlobal(60); // Fixed sizeof
-
-                // Cleanup memory
-                Marshal.Copy(Zero, 0, kvPtr, 60);
+                Marshal.Copy(Zero, 0, kvPtr, 60); // Cleanup memory
 
                 KeyValuesEntry* kvEntry = (KeyValuesEntry*) kvPtr;
                 kvEntry->KeyName = keyPtr;
@@ -209,12 +198,9 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
                 this.KeyValuePtrs.Add(kvPtr);
 
-                *(nint*)(ArrayPtr + arrayOffset) = kvPtr;
-                arrayOffset += 8;
+                entries[arrayOffset] = kvEntry;
+                arrayOffset++;
             }
-
-            result = ArrayPtr;
-            return this.KeyValues.Count;
         }
 
         internal void Free()
@@ -222,7 +208,6 @@ namespace CounterStrikeSharp.API.Modules.Utils
             if (this.KeyValues.Count == 0)
                 return;
 
-            Marshal.FreeHGlobal(ArrayPtr);
             this.KeyValuePtrs.ForEach(Marshal.FreeHGlobal);
             this.StringPtrs.ForEach(Marshal.FreeHGlobal);
         }
@@ -235,129 +220,129 @@ namespace CounterStrikeSharp.API.Modules.Utils
             this.StringPtrs.Add(strPtr);
             return strPtr;
         }
+    }
 
-        internal class KeyValueContainer
+    internal class KeyValueContainer
+    {
+        private KeyValuesType type;
+        private object value;
+
+        public KeyValueContainer(KeyValuesType type, object value)
         {
-            private KeyValuesType type;
-            private object value;
+            this.type = type;
+            this.value = value;
+        }
 
-            public KeyValueContainer(KeyValuesType type, object value)
-            {
-                this.type = type;
-                this.value = value;
-            }
-
-            public KeyValuesType GetContainerType() => type;
-            public T Get<T>() => (T)value;
+        public KeyValuesType GetContainerType() => type;
+        public T Get<T>() => (T)value;
 #pragma warning disable 8601 // No it will not be null so shut up
-            public void Set<T>(T val) => value = val;
+        public void Set<T>(T val) => value = val;
 #pragma warning restore
-        }
+    }
 
-        internal enum KeyValuesType : uint
+    internal enum KeyValuesType : uint
+    {
+        TYPE_BOOL,
+        TYPE_INT,
+        TYPE_UINT,
+        TYPE_INT64,
+        TYPE_UINT64,
+        TYPE_FLOAT,
+        TYPE_DOUBLE,
+        TYPE_STRING,
+        TYPE_POINTER,
+        TYPE_STRING_TOKEN,
+        TYPE_EHANDLE,
+        TYPE_COLOR,
+        TYPE_VECTOR,
+        TYPE_VECTOR2D,
+        TYPE_VECTOR4D,
+        TYPE_QUATERNION,
+        TYPE_QANGLE,
+        TYPE_MATRIX3X4
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    internal unsafe struct KeyValuesEntry
+    {
+        public nint KeyName;
+        public KeyValuesType ValueType;
+        public KeyValuesEntryUnion Value; // This will act like union on C++ side
+    }
+
+    [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 48)]
+    internal struct KeyValuesEntryUnion
+    {
+        [FieldOffset(0)]
+        public bool BoolValue;
+
+        [FieldOffset(0)]
+        public int IntValue;
+
+        [FieldOffset(0)]
+        public uint UIntValue;
+
+        [FieldOffset(0)]
+        public long Int64Value;
+
+        [FieldOffset(0)]
+        public ulong UInt64Value;
+
+        [FieldOffset(0)]
+        public float FloatValue;
+
+        [FieldOffset(0)]
+        public double DoubleValue;
+
+        [FieldOffset(0)]
+        public nint PointerValue;
+
+        [FieldOffset(0)]
+        public EKVColor ColorValue;
+
+        [FieldOffset(0)]
+        public Vector2 Vector2Value;
+
+        [FieldOffset(0)]
+        public Vector3 Vector3Value;
+
+        [FieldOffset(0)]
+        public Vector4 Vector4Value;
+
+        [FieldOffset(0)]
+        public EKVAngle AngleValue;
+
+        [FieldOffset(0)]
+        public Matrix3x4 Matrix3x4Value;
+    }
+
+    internal struct EKVColor
+    {
+        public byte R;
+        public byte G;
+        public byte B;
+        public byte A;
+
+        public EKVColor(byte r, byte g, byte b, byte a)
         {
-            TYPE_BOOL,
-            TYPE_INT,
-            TYPE_UINT,
-            TYPE_INT64,
-            TYPE_UINT64,
-            TYPE_FLOAT,
-            TYPE_DOUBLE,
-            TYPE_STRING,
-            TYPE_POINTER,
-            TYPE_STRING_TOKEN,
-            TYPE_EHANDLE,
-            TYPE_COLOR,
-            TYPE_VECTOR,
-            TYPE_VECTOR2D,
-            TYPE_VECTOR4D,
-            TYPE_QUATERNION,
-            TYPE_QANGLE,
-            TYPE_MATRIX3X4
+            R = r;
+            G = g;
+            B = b;
+            A = a;
         }
+    }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 1)]
-        internal unsafe struct KeyValuesEntry
+    public struct EKVAngle
+    {
+        public float Pitch;
+        public float Yaw;
+        public float Roll;
+
+        public EKVAngle(float pitch, float yaw, float roll)
         {
-            public nint KeyName;
-            public KeyValuesType ValueType;
-            public KeyValuesEntryUnion Value; // This will act like union on C++ side
-        }
-
-        [StructLayout(LayoutKind.Explicit, Pack = 1, Size = 48)]
-        internal struct KeyValuesEntryUnion
-        {
-            [FieldOffset(0)]
-            public bool BoolValue;
-
-            [FieldOffset(0)]
-            public int IntValue;
-
-            [FieldOffset(0)]
-            public uint UIntValue;
-
-            [FieldOffset(0)]
-            public long Int64Value;
-
-            [FieldOffset(0)]
-            public ulong UInt64Value;
-
-            [FieldOffset(0)]
-            public float FloatValue;
-
-            [FieldOffset(0)]
-            public double DoubleValue;
-
-            [FieldOffset(0)]
-            public nint PointerValue;
-
-            [FieldOffset(0)]
-            public EKVColor ColorValue;
-
-            [FieldOffset(0)]
-            public Vector2 Vector2Value;
-
-            [FieldOffset(0)]
-            public Vector3 Vector3Value;
-
-            [FieldOffset(0)]
-            public Vector4 Vector4Value;
-
-            [FieldOffset(0)]
-            public EKVAngle AngleValue;
-
-            [FieldOffset(0)]
-            public Matrix3x4 Matrix3x4Value;
-        }
-
-        internal struct EKVColor
-        {
-            public byte R;
-            public byte G;
-            public byte B;
-            public byte A;
-
-            public EKVColor(byte r, byte g, byte b, byte a)
-            {
-                R = r;
-                G = g;
-                B = b;
-                A = a;
-            }
-        }
-
-        public struct EKVAngle
-        {
-            public float Pitch;
-            public float Yaw;
-            public float Roll;
-
-            public EKVAngle(float pitch, float yaw, float roll)
-            {
-                Pitch = pitch;
-                Yaw = yaw;
-                Roll = roll;
-            }
+            Pitch = pitch;
+            Yaw = yaw;
+            Roll = roll;
         }
     }
 }
