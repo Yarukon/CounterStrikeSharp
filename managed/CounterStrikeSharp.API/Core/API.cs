@@ -714,7 +714,7 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
-        public static void EmitSound(uint entindex, string soundname, float pitch, float volume, bool suppliedcustomfilter, int recipientscount, object[] recipients){
+        public static void EmitSound(uint entindex, string soundname, float pitch, float volume, bool suppliedcustomfilter, ulong recipients){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
 			ScriptContext.GlobalScriptContext.Push(entindex);
@@ -722,26 +722,19 @@ namespace CounterStrikeSharp.API.Core
 			ScriptContext.GlobalScriptContext.Push(pitch);
 			ScriptContext.GlobalScriptContext.Push(volume);
 			ScriptContext.GlobalScriptContext.Push(suppliedcustomfilter);
-			ScriptContext.GlobalScriptContext.Push(recipientscount);
-			foreach (var obj in recipients)
-			{
-				ScriptContext.GlobalScriptContext.Push(obj);
-			}
+			ScriptContext.GlobalScriptContext.Push(recipients);
 			ScriptContext.GlobalScriptContext.SetIdentifier(0xCFB9CACC);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
 			}
 		}
 
-        public static void DispatchSpawn(IntPtr entity, int count, object[] values){
+        public static void DispatchSpawn(IntPtr entity, int count, IntPtr entries){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
 			ScriptContext.GlobalScriptContext.Push(entity);
 			ScriptContext.GlobalScriptContext.Push(count);
-			foreach (var obj in values)
-			{
-				ScriptContext.GlobalScriptContext.Push(obj);
-			}
+			ScriptContext.GlobalScriptContext.Push(entries);
 			ScriptContext.GlobalScriptContext.SetIdentifier(0xAE01E931);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();

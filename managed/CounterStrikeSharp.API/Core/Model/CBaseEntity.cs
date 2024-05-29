@@ -31,13 +31,12 @@ public partial class CBaseEntity
 
         if (keyValues != null)
         {
-            // keyValues.Create();
-            // VirtualFunctions.CBaseEntity_DispatchSpawn(this.Handle, keyValues.GetPointer());
-            int count = keyValues.Build(out object[] values);
-            NativeAPI.DispatchSpawn(this.Handle, count, values);
+            int count = keyValues.Build(out nint ptr);
+            NativeAPI.DispatchSpawn(this.Handle, count, ptr);
+            keyValues.Free();
         }
         else
-            NativeAPI.DispatchSpawn(this.Handle, 0, Array.Empty<object>());
+            NativeAPI.DispatchSpawn(this.Handle, 0, 0);
     }
 
     /// <summary>
@@ -71,8 +70,8 @@ public partial class CBaseEntity
         Guard.IsValidEntity(this);
 
         if (filter != null)
-            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, true, filter.GetRecipientCount(), filter.GetRecipientsArray());
+            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, true, filter.GetRecipients());
         else
-            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, false, 0, Array.Empty<object>());
+            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, false, 0);
     }
 }

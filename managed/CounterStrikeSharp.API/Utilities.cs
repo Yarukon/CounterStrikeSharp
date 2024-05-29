@@ -259,9 +259,9 @@ namespace CounterStrikeSharp.API
         public static void EmitSound(uint index, string soundName, float pitch = 1f, float volume = 1f, CRecipientFilter? filter = null)
         {
             if (filter != null)
-                NativeAPI.EmitSound(index, soundName, pitch, volume, true, filter.GetRecipientCount(), filter.GetRecipientsArray());
+                NativeAPI.EmitSound(index, soundName, pitch, volume, true, filter.GetRecipients());
             else
-                NativeAPI.EmitSound(index, soundName, pitch, volume, false, 0, Array.Empty<object>());
+                NativeAPI.EmitSound(index, soundName, pitch, volume, false, 0);
         }
     }
 }

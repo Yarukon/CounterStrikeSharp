@@ -254,14 +254,11 @@ void EmitSound(ScriptContext& script_context)
     // If managed side defined recipient players, add them
     if (suppliedCustomFilter)
     {
-        auto recipientCount = script_context.GetArgument<int>(5);
-
-        for (int i = 0; i < recipientCount; ++i)
-            filter.AddRecipient(script_context.GetArgument<int>(6 + i));
+        auto recipients = script_context.GetArgument<uint64>(5);
+        for (int i = 0; i < 64; ++i)
+            if ((recipients & (1ull << i)) != 0) filter.AddRecipient(i);
     } else // else we add all the valid players into filter
-    {
         filter.AddAllPlayers();
-    }
 
     SndOpEventGuid_t guid;
     CSoundOpGameSystem_StartSoundEvent(pSoundOpGameSystem, &guid, &filter, soundName, entIndex, -1, 0);
@@ -269,16 +266,14 @@ void EmitSound(ScriptContext& script_context)
     SoundEventParamFloat _pitch = SoundEventParamFloat(pitch);
     bool result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "pitch", &_pitch, 0, 0);
     if (!result)
-    {
-        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "pitch", pitch, guid.m_nGuid, guid.m_hStackHash);
-    }
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "pitch", pitch, guid.m_nGuid,
+                           guid.m_hStackHash);
 
     SoundEventParamFloat _volume = SoundEventParamFloat(volume);
     result = CSoundOpGameSystem_SetSoundEventParam(pSoundOpGameSystem, &filter, guid, "volume", &_volume, 0, 0);
     if (!result)
-    {
-        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "volume", volume, guid.m_nGuid, guid.m_hStackHash);
-    }
+        CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "volume", volume,
+                           guid.m_nGuid, guid.m_hStackHash);
 }
 
 enum KeyValuesType_t : unsigned int
@@ -303,6 +298,33 @@ enum KeyValuesType_t : unsigned int
     TYPE_MATRIX3X4
 };
 
+#pragma pack(push)
+#pragma pack(1)
+struct EKVEntry {
+    const char* key;
+    KeyValuesType_t type;
+    union
+    {
+        bool boolValue;
+        int32 intValue;
+        uint uintValue; // Shared with EHandle, StringToken
+        int64 int64Value;
+        uint64 uint64Value;
+        float floatValue;
+        double doubleValue;
+        const char* stringValue;
+        void* pointerValue;
+        Color colorValue;
+        Vector2D vec2Value;
+        Vector vec3Value;
+        Vector4D vec4Value;
+        Quaternion quaternionValue;
+        QAngle angleValue;
+        matrix3x4_t matrix3x4Value;
+    } value;
+};
+#pragma pack(pop)
+
 void DispatchSpawn(ScriptContext& script_context)
 {
     if (!CBaseEntity_DispatchSpawn)
@@ -320,134 +342,88 @@ void DispatchSpawn(ScriptContext& script_context)
     }
 
     CEntityKeyValues* pEntityKeyValues = new CEntityKeyValues();
-    int offset = 2;
-    for (int i = 0; i < count; ++i) {
-        const char* key = script_context.GetArgument<const char*>(offset);
-        KeyValuesType_t _type = script_context.GetArgument<KeyValuesType_t>(offset + 1);
-        switch (_type) {
-        case counterstrikesharp::TYPE_BOOL:
-            pEntityKeyValues->SetBool(key, script_context.GetArgument<bool>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_INT:
-            pEntityKeyValues->SetInt(key, script_context.GetArgument<int>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_UINT:
-            pEntityKeyValues->SetUint(key, script_context.GetArgument<unsigned int>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_INT64:
-            pEntityKeyValues->SetInt64(key, script_context.GetArgument<long>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_UINT64:
-            pEntityKeyValues->SetUint64(key, script_context.GetArgument<unsigned long>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_FLOAT:
-            pEntityKeyValues->SetFloat(key, script_context.GetArgument<float>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_DOUBLE:
-            pEntityKeyValues->SetDouble(key, script_context.GetArgument<double>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_STRING:
-            pEntityKeyValues->SetString(key, ((CUtlString*)new CUtlString(script_context.GetArgument<const char*>(offset + 2)))->Get());
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_POINTER:
-            pEntityKeyValues->SetPtr(key, script_context.GetArgument<void*>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_STRING_TOKEN:
-            pEntityKeyValues->SetStringToken(key, script_context.GetArgument<unsigned int>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_EHANDLE:
-            pEntityKeyValues->SetEHandle(key, script_context.GetArgument<unsigned int>(offset + 2));
-            offset += 3;
-            break;
-        case counterstrikesharp::TYPE_COLOR: {
-            char r = script_context.GetArgument<char>(offset + 2);
-            char g = script_context.GetArgument<char>(offset + 3);
-            char b = script_context.GetArgument<char>(offset + 4);
-            char a = script_context.GetArgument<char>(offset + 5);
 
-            pEntityKeyValues->SetColor(key, Color(r, g, b, a));
-            offset += 6;
-            break;
-        }
-        case counterstrikesharp::TYPE_VECTOR: {
-            float x = script_context.GetArgument<float>(offset + 2);
-            float y = script_context.GetArgument<float>(offset + 3);
-            float z = script_context.GetArgument<float>(offset + 4);
+    auto entryPtrs = script_context.GetArgument<EKVEntry**>(2);
+    for (int i = 0; i < count; ++i)
+    {
+        EKVEntry* entry = entryPtrs[i];
+        const char* key = entry->key;
+        switch (entry->type)
+        {
+            case TYPE_BOOL:
+                pEntityKeyValues->SetBool(key, entry->value.boolValue);
+                break;
 
-            pEntityKeyValues->SetVector(key, Vector(x, y, z));
-            offset += 5;
-            break;
-        }
-        case counterstrikesharp::TYPE_VECTOR2D: {
-            float x = script_context.GetArgument<float>(offset + 2);
-            float y = script_context.GetArgument<float>(offset + 3);
+            case TYPE_INT:
+                pEntityKeyValues->SetInt(key, entry->value.intValue);
+                break;
 
-            pEntityKeyValues->SetVector2D(key, Vector2D(x, y));
-            offset += 4;
-            break;
-        }
-        case counterstrikesharp::TYPE_VECTOR4D: {
-            float x = script_context.GetArgument<float>(offset + 2);
-            float y = script_context.GetArgument<float>(offset + 3);
-            float z = script_context.GetArgument<float>(offset + 4);
-            float w = script_context.GetArgument<float>(offset + 5);
+            case TYPE_UINT:
+                pEntityKeyValues->SetUint(key, entry->value.uintValue);
+                break;
 
-            pEntityKeyValues->SetVector4D(key, Vector4D(x, y, z, w));
-            offset += 6;
-            break;
-        }
-        case counterstrikesharp::TYPE_QUATERNION: {
-            float x = script_context.GetArgument<float>(offset + 2);
-            float y = script_context.GetArgument<float>(offset + 3);
-            float z = script_context.GetArgument<float>(offset + 4);
-            float w = script_context.GetArgument<float>(offset + 5);
+            case TYPE_INT64:
+                pEntityKeyValues->SetInt64(key, entry->value.int64Value);
+                break;
 
-            pEntityKeyValues->SetQuaternion(key, Quaternion(x, y, z, w));
-            offset += 6;
-            break;
-        }
-        case counterstrikesharp::TYPE_QANGLE: {
-            float x = script_context.GetArgument<float>(offset + 2);
-            float y = script_context.GetArgument<float>(offset + 3);
-            float z = script_context.GetArgument<float>(offset + 4);
+            case TYPE_UINT64:
+                pEntityKeyValues->SetUint64(key, entry->value.uint64Value);
+                break;
 
-            pEntityKeyValues->SetQAngle(key, QAngle(x, y, z));
-            offset += 5;
-            break;
-        }
-        case counterstrikesharp::TYPE_MATRIX3X4: {
-            float m11 = script_context.GetArgument<float>(offset + 2);
-            float m12 = script_context.GetArgument<float>(offset + 3);
-            float m13 = script_context.GetArgument<float>(offset + 4);
-            float m14 = script_context.GetArgument<float>(offset + 5);
+            case TYPE_FLOAT:
+                pEntityKeyValues->SetFloat(key, entry->value.floatValue);
+                break;
 
-            float m21 = script_context.GetArgument<float>(offset + 6);
-            float m22 = script_context.GetArgument<float>(offset + 7);
-            float m23 = script_context.GetArgument<float>(offset + 8);
-            float m24 = script_context.GetArgument<float>(offset + 9);
+            case TYPE_DOUBLE:
+                pEntityKeyValues->SetDouble(key, entry->value.doubleValue);
+                break;
 
-            float m31 = script_context.GetArgument<float>(offset + 10);
-            float m32 = script_context.GetArgument<float>(offset + 11);
-            float m33 = script_context.GetArgument<float>(offset + 12);
-            float m34 = script_context.GetArgument<float>(offset + 13);
+            case TYPE_STRING:
+                pEntityKeyValues->SetString(key, entry->value.stringValue);
+                break;
 
-            pEntityKeyValues->SetMatrix3x4(
-                key, matrix3x4_t(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34));
-            offset += 14;
-            break;
-        }
-        default:
-            break;
+            case TYPE_POINTER:
+                pEntityKeyValues->SetPtr(key, entry->value.pointerValue);
+                break;
+
+            case TYPE_STRING_TOKEN:
+                pEntityKeyValues->SetStringToken(key, entry->value.uintValue);
+                break;
+
+            case TYPE_EHANDLE:
+                pEntityKeyValues->SetEHandle(key, entry->value.uintValue);
+                break;
+
+            case TYPE_COLOR:
+                pEntityKeyValues->SetColor(key, entry->value.colorValue);
+                break;
+
+            case TYPE_VECTOR:
+                pEntityKeyValues->SetVector(key, entry->value.vec3Value);
+                break;
+
+            case TYPE_VECTOR2D:
+                pEntityKeyValues->SetVector2D(key, entry->value.vec2Value);
+                break;
+
+            case TYPE_VECTOR4D:
+                pEntityKeyValues->SetVector4D(key, entry->value.vec4Value);
+                break;
+
+            case TYPE_QUATERNION:
+                pEntityKeyValues->SetQuaternion(key, entry->value.quaternionValue);
+                break;
+
+            case TYPE_QANGLE:
+                pEntityKeyValues->SetQAngle(key, entry->value.angleValue);
+                break;
+
+            case TYPE_MATRIX3X4:
+                pEntityKeyValues->SetMatrix3x4(key, entry->value.matrix3x4Value);
+                break;
+
+            default:
+                break;
         }
     }
 

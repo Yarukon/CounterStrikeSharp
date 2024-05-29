@@ -33,7 +33,23 @@ public class CRecipientFilter
         return recipients[index];
     }
 
-    public void AddRecipient(int playerSlot) => recipients.Add(playerSlot);
+    public void AddRecipient(int playerSlot)
+    {
+        if (playerSlot < 0 || playerSlot > 63)
+            throw new ArgumentOutOfRangeException($"Slot {playerSlot} is out of range.");
 
-    internal object[] GetRecipientsArray() => recipients.Cast<object>().ToArray(); // For NativeAPI call
+        recipients.Add(playerSlot);
+    }
+
+    public void Clear() => recipients.Clear();
+
+    internal ulong GetRecipients()
+    {
+        ulong mask = 0;
+
+        foreach (var recipient in recipients)
+            mask |= 1UL << recipient;
+
+        return mask;
+    }
 }

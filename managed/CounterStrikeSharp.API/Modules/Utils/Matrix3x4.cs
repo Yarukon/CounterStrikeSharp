@@ -9,7 +9,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
     /// <summary>
     /// Matrix3x4 for <see cref="CEntityKeyValues"/>
     /// </summary>
-    public class Matrix3x4
+    public struct Matrix3x4
     {
         public float M11;
         public float M12;
