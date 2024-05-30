@@ -205,9 +205,6 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
         internal void Free()
         {
-            if (this.KeyValues.Count == 0)
-                return;
-
             this.KeyValuePtrs.ForEach(Marshal.FreeHGlobal);
             this.StringPtrs.ForEach(Marshal.FreeHGlobal);
         }
