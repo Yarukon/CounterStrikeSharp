@@ -256,7 +256,7 @@ void EmitSound(ScriptContext& script_context)
     {
         auto recipients = script_context.GetArgument<uint64>(5);
         for (int i = 0; i < 64; ++i)
-            if ((recipients & (1ull << i)) != 0) filter.AddRecipient(i);
+            if (recipients & ((uint64)1 << i)) filter.AddRecipient(i);
     } else // else we add all the valid players into filter
         filter.AddAllPlayers();
 

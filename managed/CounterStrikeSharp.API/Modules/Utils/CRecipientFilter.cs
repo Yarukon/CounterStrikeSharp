@@ -38,6 +38,9 @@ public class CRecipientFilter
         if (playerSlot < 0 || playerSlot > 63)
             throw new ArgumentOutOfRangeException($"Slot {playerSlot} is out of range.");
 
+        if (recipients.Contains(playerSlot)) // Silently fail if duplicated
+            return;
+
         recipients.Add(playerSlot);
     }
 
@@ -48,7 +51,7 @@ public class CRecipientFilter
         ulong mask = 0;
 
         foreach (var recipient in recipients)
-            mask |= 1UL << recipient;
+            mask |= 1ul << recipient;
 
         return mask;
     }
