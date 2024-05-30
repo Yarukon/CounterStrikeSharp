@@ -29,16 +29,12 @@ public partial class CBaseEntity
     {
         Guard.IsValidEntity(this);
 
-        if (keyValues != null)
+        if (keyValues != null && keyValues.Count() > 0)
         {
-            if (keyValues.Count() > 0)
-            {
-                KeyValuesEntry** entries = stackalloc KeyValuesEntry*[keyValues.Count()];
-                keyValues.Build(entries);
-                NativeAPI.DispatchSpawn(this.Handle, keyValues.Count(), (nint) entries);
-                keyValues.Free();
-            } else
-                NativeAPI.DispatchSpawn(this.Handle, 0, 0);
+            KeyValuesEntry** entries = stackalloc KeyValuesEntry*[keyValues.Count()];
+            keyValues.Build(entries);
+            NativeAPI.DispatchSpawn(this.Handle, keyValues.Count(), (nint)entries);
+            keyValues.Free();
         }
         else
             NativeAPI.DispatchSpawn(this.Handle, 0, 0);
