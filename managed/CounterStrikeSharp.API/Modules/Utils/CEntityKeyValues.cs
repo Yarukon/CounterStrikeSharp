@@ -59,6 +59,9 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
         internal void SetValue<T>(string key, KeyValuesType type, object value)
         {
+            if (key == null || string.IsNullOrWhiteSpace(key))
+                throw new ArgumentNullException("Key can't be null/empty/whitespace!");
+
             if (value == null)
                 throw new ArgumentNullException("Value can't be null!");
 
