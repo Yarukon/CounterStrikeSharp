@@ -1,4 +1,3 @@
-#set(_ITERATOR_DEBUG_LEVEL 2)
 add_definitions(-D_LINUX -DPOSIX -DLINUX -DGNUC -DCOMPILER_GCC -DPLATFORM_64BITS -D_FILE_OFFSET_BITS=64)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp")
@@ -23,6 +22,7 @@ set(
     ${SOURCESDK_LIB}/linux64/tier1.a
     ${SOURCESDK_LIB}/linux64/interfaces.a
     ${SOURCESDK_LIB}/linux64/mathlib.a
+    ${SOURCESDK_LIB}/linux64/release/libprotobuf.a
     spdlog
     dynload_s
     dyncall_s

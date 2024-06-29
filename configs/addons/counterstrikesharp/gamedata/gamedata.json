@@ -253,5 +253,11 @@
       "windows": "48 89 5C 24 ? 48 89 6C 24 ? 56 57 41 ? 48 ? ? ? 41 ? ? ? 4C",
       "linux": "I dont care"
     }
+  },
+  "CNetworkGameServer_ClientList": {
+    "offsets": {
+      "windows": 78,
+      "linux": 80
+    }
   }
 }

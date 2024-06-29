@@ -25,6 +25,7 @@
 #include "core/managers/voice_manager.h"
 #include <public/game/server/iplayerinfo.h>
 #include <public/entity2/entitysystem.h>
+#include "core/serversideclient.h"
 
 #include <funchook.h>
 // clang-format on
@@ -70,6 +71,8 @@ ICvar* cvars = nullptr;
 ISource2Server* server = nullptr;
 ISource2GameEntities* gameEntities = nullptr;
 CGlobalEntityList* globalEntityList = nullptr;
+INetworkGameServer* networkGameServer = nullptr;
+INetworkMessages* networkMessages = nullptr;
 CounterStrikeSharpMMPlugin* mmPlugin = nullptr;
 SourceHook::Impl::CSourceHookImpl source_hook_impl;
 SourceHook::ISourceHook* source_hook = &source_hook_impl;
@@ -138,8 +141,25 @@ void DetourGameEventManagerInit(IGameEventManager2* pGameEventManager)
     eventManager.OnAllInitialized_Post();
 }
 
+CUtlVector<CServerSideClient*>* GetClientList()
+{
+    if (!globals::networkGameServer) return nullptr;
+
+    static int offset = globals::gameConfig->GetOffset("CNetworkGameServer_ClientList");
+    return (CUtlVector<CServerSideClient*>*)(&globals::networkGameServer[offset]);
+}
+
+CServerSideClient* GetClientBySlot(CPlayerSlot slot)
+{
+    CUtlVector<CServerSideClient*>* pClients = GetClientList();
+
+    if (!pClients) return nullptr;
+
+    return pClients->Element(slot.Get());
+}
+
 int source_hook_pluginid = 0;
-CGlobalVars* getGlobalVars() { return engineServer2->GetServerGlobals(); }
+CGlobalVars* GetGlobalVars() { return engineServer2->GetServerGlobals(); }
 
 } // namespace globals
 } // namespace counterstrikesharp

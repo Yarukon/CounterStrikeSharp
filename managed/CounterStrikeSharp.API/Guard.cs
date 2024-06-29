@@ -2,9 +2,9 @@
 {
     public static class Guard
     {
-        public static void IsValidEntity(CEntityInstance ent)
+        public static void IsValidEntity(CEntityInstance? ent)
         {
-            if (!ent.IsValid)
+            if (ent == null || !ent.IsValid)
                 throw new InvalidOperationException("Entity is not valid");
         }
     }

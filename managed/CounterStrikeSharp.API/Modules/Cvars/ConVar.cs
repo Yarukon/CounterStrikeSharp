@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using CounterStrikeSharp.API.Core;
+using Microsoft.Extensions.Logging;
 
 namespace CounterStrikeSharp.API.Modules.Cvars;
 
@@ -154,6 +155,34 @@ public class ConVar
     public override string ToString()
     {
         return $"ConVar [name={Name}, description={Description}, type={Type}, flags={Flags}]";
+    }
+
+    /// <summary>
+    /// Replicate value to client without actually change server's cvar value
+    /// </summary>
+    /// <param name="controller">Player controller</param>
+    /// <param name="value">The value to replicate</param>
+    /// <exception cref="InvalidOperationException">Entity is not valid</exception>
+    public void ReplicateToClient(CCSPlayerController? controller, string value)
+    {
+        Guard.IsValidEntity(controller);
+        ReplicateToClient(controller!.Slot, value);
+    }
+
+    /// <summary>
+    /// Replicate value to client without actually change server's cvar value
+    /// </summary>
+    /// <param name="client">Player slot</param>
+    /// <param name="value">The value to replicate</param>
+    public void ReplicateToClient(int client, string value)
+    {
+        if ((Flags & ConVarFlags.FCVAR_REPLICATED) == 0)
+        {
+            Application.Instance.Logger.LogWarning("Convar {} is not marked as FCVAR_REPLICATED, but ReplicateToClient was called on it.", Name);
+            return;
+        }
+
+        NativeAPI.ReplicateToClient(client, Name, value);
     }
 
     /// <summary>

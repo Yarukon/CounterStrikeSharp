@@ -189,7 +189,7 @@ void ServerManager::PreWorldUpdate(bool bSimulating)
 
     if (size > 0) {
         CSSHARP_CORE_TRACE("Executing queued tasks of size: {0} at time {1}", size,
-                           globals::getGlobalVars()->curtime);
+                           globals::GetGlobalVars()->curtime);
 
         for (size_t i = 0; i < size; i++) {
             out_list[i]();

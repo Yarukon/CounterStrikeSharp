@@ -123,7 +123,7 @@ SchemaKey schema::GetOffset(const char* className,
 
 void SetStateChanged(Z_CBaseEntity* pEntity, int offset) {
     // addresses::StateChanged(pEntity->m_NetworkTransmitComponent(), pEntity, offset, -1, -1);
-    auto vars = counterstrikesharp::globals::getGlobalVars();
+    auto vars = counterstrikesharp::globals::GetGlobalVars();
 
     // if (vars) pEntity->m_lastNetworkChange = vars->curtime;
 

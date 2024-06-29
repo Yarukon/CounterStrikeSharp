@@ -100,6 +100,7 @@ bool CounterStrikeSharpMMPlugin::Load(PluginId id, ISmmAPI* ismm, char* error, s
     GET_V_IFACE_ANY(GetEngineFactory, globals::networkServerService, INetworkServerService, NETWORKSERVERSERVICE_INTERFACE_VERSION);
     GET_V_IFACE_ANY(GetEngineFactory, globals::schemaSystem, CSchemaSystem, SCHEMASYSTEM_INTERFACE_VERSION);
     GET_V_IFACE_ANY(GetEngineFactory, globals::gameEventSystem, IGameEventSystem, GAMEEVENTSYSTEM_INTERFACE_VERSION);
+    GET_V_IFACE_ANY(GetEngineFactory, globals::networkMessages, INetworkMessages, NETWORKMESSAGES_INTERFACE_VERSION);
     GET_V_IFACE_ANY(GetEngineFactory, globals::engineServiceManager, IEngineServiceMgr, ENGINESERVICEMGR_INTERFACE_VERSION);
 
     auto coreconfig_path = std::string(utils::ConfigsDirectory() + "/core");
@@ -125,6 +126,11 @@ bool CounterStrikeSharpMMPlugin::Load(PluginId id, ISmmAPI* ismm, char* error, s
     }
 
     globals::Initialize();
+
+    if (late)
+    {
+        globals::networkGameServer = globals::networkServerService->GetIGameServer();
+    }
 
     CSSHARP_CORE_INFO("Globals loaded.");
     globals::mmPlugin = &gPlugin;
@@ -164,12 +170,13 @@ bool CounterStrikeSharpMMPlugin::Load(PluginId id, ISmmAPI* ismm, char* error, s
 
 void CounterStrikeSharpMMPlugin::Hook_StartupServer(const GameSessionConfiguration_t& config, ISource2WorldSession*, const char*)
 {
+    globals::networkGameServer = globals::networkServerService->GetIGameServer();
     globals::entitySystem = interfaces::pGameResourceServiceServer->GetGameEntitySystem();
     globals::entitySystem->AddListenerEntity(&globals::entityManager.entityListener);
     globals::timerSystem.OnStartupServer();
 
     on_activate_callback->ScriptContext().Reset();
-    on_activate_callback->ScriptContext().Push(globals::getGlobalVars()->mapname.ToCStr());
+    on_activate_callback->ScriptContext().Push(globals::GetGlobalVars()->mapname.ToCStr());
     on_activate_callback->Execute();
 }
 
@@ -213,7 +220,7 @@ void CounterStrikeSharpMMPlugin::Hook_GameFrame(bool simulating, bool bFirstTick
 
     if (size > 0)
     {
-        CSSHARP_CORE_TRACE("Executing queued tasks of size: {0} on tick number {1}", size, globals::getGlobalVars()->tickcount);
+        CSSHARP_CORE_TRACE("Executing queued tasks of size: {0} on tick number {1}", size, globals::GetGlobalVars()->tickcount);
 
         for (size_t i = 0; i < size; i++)
         {
@@ -221,11 +228,11 @@ void CounterStrikeSharpMMPlugin::Hook_GameFrame(bool simulating, bool bFirstTick
         }
     }
 
-    auto callbacks = globals::tickScheduler.getCallbacks(globals::getGlobalVars()->tickcount);
+    auto callbacks = globals::tickScheduler.getCallbacks(globals::GetGlobalVars()->tickcount);
     if (callbacks.size() > 0)
     {
         CSSHARP_CORE_TRACE("Executing frame specific tasks of size: {0} on tick number {1}", callbacks.size(),
-                           globals::getGlobalVars()->tickcount);
+                           globals::GetGlobalVars()->tickcount);
 
         for (auto& callback : callbacks)
         {

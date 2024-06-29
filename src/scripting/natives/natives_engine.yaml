@@ -27,3 +27,4 @@ GET_VALVE_INTERFACE: interfaceType:int, interfaceName:string -> pointer
 GET_COMMAND_PARAM_VALUE: param:string, dataType:DataType_t, defaultValue:any -> any
 PRINT_TO_SERVER_CONSOLE: msg:string -> void
 GET_FIRST_GAMESYSTEM_PTR: -> pointer
+REPLICATE_TO_CLIENT: slot:int, convar:string, value:string -> void

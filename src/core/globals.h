@@ -13,6 +13,8 @@
 #include "ISmmAPI.h"
 #include "eiface.h"
 #include "iserver.h"
+#include "core/serversideclient.h"
+#include <public/networksystem/inetworkmessages.h>
 #include <sourcehook/sourcehook.h>
 
 class IGameEventManager2;
@@ -91,6 +93,8 @@ extern CDotNetManager dotnetManager;
 extern ICvar* cvars;
 extern ISource2Server* server;
 extern CGlobalEntityList* globalEntityList;
+extern INetworkGameServer* networkGameServer;
+extern INetworkMessages* networkMessages;
 extern EntityListener entityListener;
 extern CGameEntitySystem* entitySystem;
 
@@ -132,7 +136,10 @@ extern std::thread::id gameThreadId;
 void Initialize();
 // Should only be called within the active game loop (i e map should be loaded
 // and active) otherwise that'll be nullptr!
-CGlobalVars* getGlobalVars();
+CGlobalVars* GetGlobalVars();
+
+CUtlVector<CServerSideClient*>* GetClientList();
+CServerSideClient* GetClientBySlot(CPlayerSlot slot);
 } // namespace globals
 
 namespace modules {

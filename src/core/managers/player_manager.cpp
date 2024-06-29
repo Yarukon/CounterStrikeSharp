@@ -325,7 +325,7 @@ int PlayerManager::ListenClient() const { return m_listen_client; }
 
 int PlayerManager::NumPlayers() const { return m_player_count; }
 
-int PlayerManager::MaxClients() const { return globals::getGlobalVars()->maxClients; }
+int PlayerManager::MaxClients() const { return globals::GetGlobalVars()->maxClients; }
 
 CPlayer* PlayerManager::GetPlayerBySlot(int client) const
 {
