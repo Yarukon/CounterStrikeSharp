@@ -37,7 +37,7 @@ class CServerSideClient : public INetworkMessageProcessingPreFilter
   private:
     [[maybe_unused]] void* m_pVT1; // INetworkMessageProcessingPreFilter
     [[maybe_unused]] char pad1[0x30];
-#ifdef __linux__
+#ifndef WIN32
     [[maybe_unused]] char pad2[0x10];
 #endif
     CUtlString m_Name; // 64 | 80
