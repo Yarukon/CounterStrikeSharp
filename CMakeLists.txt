@@ -6,14 +6,11 @@ project(counterstrikesharp C CXX ASM)
 include("makefiles/shared.cmake")
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set(protobuf_BUILD_TESTS OFF)
-set(protobuf_BUILD_SHARED_LIBS)
 
 add_subdirectory(libraries/spdlog)
 add_subdirectory(libraries/dyncall)
 add_subdirectory(libraries/funchook)
 add_subdirectory(libraries/DynoHook)
-add_subdirectory(${SOURCESDK_DIR}/thirdparty/protobuf-3.21.8)
 
 set_property(TARGET dynohook PROPERTY DYNO_ARCH_X86 64)
 set_property(TARGET funchook-static PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -108,7 +105,7 @@ set(PROTO_GEN_CPP
 )
 
 # Sources
-add_library(${PROJECT_NAME} SHARED ${PROTO_GEN_CPP} ${SOURCE_FILES} ${NATIVES_SOURCES} ${CONVERSIONS_SOURCES} ${CONVERSIONS_HEADERS})
+add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${PROTO_GEN_CPP} ${NATIVES_SOURCES} ${CONVERSIONS_SOURCES} ${CONVERSIONS_HEADERS})
 
 target_include_directories(
     ${PROJECT_NAME}
