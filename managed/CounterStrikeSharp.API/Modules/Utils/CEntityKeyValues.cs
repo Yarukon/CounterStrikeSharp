@@ -59,11 +59,14 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
         internal void SetValue<T>(string key, KeyValuesType type, object value)
         {
-            if (key == null || string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrWhiteSpace(key))
                 throw new ArgumentNullException("Key can't be null/empty/whitespace!");
 
             if (value == null)
                 throw new ArgumentNullException("Value can't be null!");
+
+            if (value is Color color && color == Color.Empty)
+                throw new ArgumentNullException("Color value can't be Color.Empty!");
 
             if (KeyValues.TryGetValue(key, out KeyValueContainer? v))
                 v.Set(value);
@@ -82,7 +85,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
             return defaultValue;
         }
 
-        public static readonly byte[] Zero = new byte[60];
+        private static readonly byte[] Zero = new byte[60];
 
         // Build keyvalues and passthrough to C++ side
         internal unsafe void Build(KeyValuesEntry** entries)
@@ -144,58 +147,28 @@ namespace CounterStrikeSharp.API.Modules.Utils
                         break;
 
                     case KeyValuesType.TYPE_COLOR:
-                        Color color = container.Value.Get<Color>();
-                        kvEntry->Value.ColorValue.R = color.R;
-                        kvEntry->Value.ColorValue.G = color.G;
-                        kvEntry->Value.ColorValue.B = color.B;
-                        kvEntry->Value.ColorValue.A = color.A;
+                        kvEntry->Value.ColorValue = new(container.Value.Get<Color>());
                         break;
 
                     case KeyValuesType.TYPE_VECTOR:
-                        Vector3 vec = container.Value.Get<Vector3>();
-                        kvEntry->Value.Vector3Value.X = vec.X;
-                        kvEntry->Value.Vector3Value.Y = vec.Y;
-                        kvEntry->Value.Vector3Value.Z = vec.Z;
+                        kvEntry->Value.Vector3Value = container.Value.Get<Vector3>();
                         break;
 
                     case KeyValuesType.TYPE_VECTOR2D:
-                        Vector2 vec2 = container.Value.Get<Vector2>();
-                        kvEntry->Value.Vector2Value.X = vec2.X;
-                        kvEntry->Value.Vector2Value.Y = vec2.Y;
+                        kvEntry->Value.Vector2Value = container.Value.Get<Vector2>();
                         break;
 
                     case KeyValuesType.TYPE_VECTOR4D:
                     case KeyValuesType.TYPE_QUATERNION:
-                        Vector4 vec4 = container.Value.Get<Vector4>();
-                        kvEntry->Value.Vector4Value.X = vec4.X;
-                        kvEntry->Value.Vector4Value.Y = vec4.Y;
-                        kvEntry->Value.Vector4Value.Z = vec4.Z;
-                        kvEntry->Value.Vector4Value.W = vec4.W;
+                        kvEntry->Value.Vector4Value = container.Value.Get<Vector4>();
                         break;
 
                     case KeyValuesType.TYPE_QANGLE:
-                        EKVAngle angle = container.Value.Get<EKVAngle>();
-                        kvEntry->Value.AngleValue.Pitch = angle.Pitch;
-                        kvEntry->Value.AngleValue.Yaw = angle.Yaw;
-                        kvEntry->Value.AngleValue.Roll = angle.Roll;
+                        kvEntry->Value.AngleValue = container.Value.Get<EKVAngle>();
                         break;
 
                     case KeyValuesType.TYPE_MATRIX3X4:
-                        Matrix3x4 matrix = container.Value.Get<Matrix3x4>();
-                        kvEntry->Value.Matrix3x4Value.M11 = matrix.M11;
-                        kvEntry->Value.Matrix3x4Value.M12 = matrix.M12;
-                        kvEntry->Value.Matrix3x4Value.M13 = matrix.M13;
-                        kvEntry->Value.Matrix3x4Value.M14 = matrix.M14;
-
-                        kvEntry->Value.Matrix3x4Value.M21 = matrix.M21;
-                        kvEntry->Value.Matrix3x4Value.M22 = matrix.M22;
-                        kvEntry->Value.Matrix3x4Value.M23 = matrix.M23;
-                        kvEntry->Value.Matrix3x4Value.M24 = matrix.M24;
-
-                        kvEntry->Value.Matrix3x4Value.M31 = matrix.M31;
-                        kvEntry->Value.Matrix3x4Value.M32 = matrix.M32;
-                        kvEntry->Value.Matrix3x4Value.M33 = matrix.M33;
-                        kvEntry->Value.Matrix3x4Value.M34 = matrix.M34;
+                        kvEntry->Value.Matrix3x4Value = container.Value.Get<Matrix3x4>();
                         break;
                 }
 
@@ -329,6 +302,10 @@ namespace CounterStrikeSharp.API.Modules.Utils
             G = g;
             B = b;
             A = a;
+        }
+
+        public EKVColor(Color color) : this(color.R, color.G, color.B, color.A)
+        {
         }
     }
 
