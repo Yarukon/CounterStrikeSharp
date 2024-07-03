@@ -116,8 +116,11 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
                     case KeyValuesType.TYPE_UINT:
                     case KeyValuesType.TYPE_STRING_TOKEN:
-                    case KeyValuesType.TYPE_EHANDLE:
                         kvEntry->Value.UIntValue = container.Value.Get<uint>();
+                        break;
+
+                    case KeyValuesType.TYPE_EHANDLE:
+                        kvEntry->Value.UIntValue = container.Value.Get<CEntityHandle>().Raw;
                         break;
 
                     case KeyValuesType.TYPE_INT64:
