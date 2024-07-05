@@ -259,5 +259,19 @@
       "windows": 78,
       "linux": 80
     }
+  },
+  "CItemSelectionCriteria_BAddCondition": {
+    "signatures": {
+      "library": "server",
+      "windows": "48 89 5C 24 ? 56 57 41 ? 41 ? 41 ? 48 ? ? ? 81 79",
+      "linux": "I dont care"
+    }
+  },
+  "CItemGeneration_GenerateRandomItem": {
+    "signatures": {
+      "library": "server",
+      "windows": "48 89 5C 24 ? 48 89 6C 24 ? 48 89 74 24 ? 48 89 7C 24 ? 41 ? 48 ? ? ? 48 ? ? ? ? ? ? 49 ? ? 49",
+      "linux": "I dont care"
+    }
   }
 }
