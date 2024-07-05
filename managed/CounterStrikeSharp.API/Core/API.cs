@@ -763,6 +763,17 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
+        public static IntPtr CreateWeaponEntity(string classname){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(classname);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0xB40DCFF8);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			return (IntPtr)ScriptContext.GlobalScriptContext.GetResult(typeof(IntPtr));
+			}
+		}
+
         public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();

@@ -25,6 +25,7 @@ using CounterStrikeSharp.API.Core.Logging;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Entities;
 using Microsoft.Extensions.Logging;
+using System.Xml.Linq;
 
 namespace CounterStrikeSharp.API
 {
@@ -209,6 +210,21 @@ namespace CounterStrikeSharp.API
             }
 
             return (T)Activator.CreateInstance(typeof(T), pointerTo)!;
+        }
+
+        /// <summary>
+        /// Create weapon entity, this will need you manually set the entity's value and call DispatchSpawn()
+        /// </summary>
+        /// <typeparam name="T">Entity Type</typeparam>
+        /// <param name="classname">Weapon Classname</param>
+        /// <returns>Entity Instance</returns>
+        /// <exception cref="ArgumentNullException">classname can't be null/empty/whitespace!</exception>
+        public static T? CreateWeaponEntity<T>(string classname) where T : CBaseEntity
+        {
+            if (string.IsNullOrWhiteSpace(classname))
+                throw new ArgumentNullException("classname can't be null/empty/whitespace!");
+
+            return (T?) Activator.CreateInstance(typeof(T), NativeAPI.CreateWeaponEntity(classname));
         }
 
         private static int FindSchemaChain(string className) => Schema.GetSchemaOffset(className, "__m_pChainEntity");

@@ -97,7 +97,9 @@ set(SOURCE_FILES
     src/core/recipientfilter.h
     src/core/sndopeventguid.h
     src/core/soundeventparam.h
-    src/core/serversideclient.h)
+    src/core/serversideclient.h
+    src/core/item_selection_criteria.h
+)
 
 set(PROTO_GEN_CPP
     src/protobuf/generated/network_connection.pb.cc

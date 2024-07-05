@@ -210,8 +210,8 @@ void PrintToServerConsole(ScriptContext& scriptContext)
 
 void* GetFirstGameSystemPtr(ScriptContext& scriptContext)
 {
-    if (!CBaseGameSystemFactory::sm_pFirst[0]) return nullptr;
-    return CBaseGameSystemFactory::sm_pFirst[0];
+    if (!*CBaseGameSystemFactory::sm_pFirst) return nullptr;
+    return *CBaseGameSystemFactory::sm_pFirst;
 }
 
 void ReplicateToClient(ScriptContext& scriptContext)

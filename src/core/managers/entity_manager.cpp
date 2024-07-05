@@ -91,6 +91,22 @@ void EntityManager::OnAllInitialized()
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'CSoundOpGameSystem_SetSoundEventParam\'");
     }
 
+    CItemSelectionCriteria_BAddCondition = (decltype(CItemSelectionCriteria_BAddCondition))(modules::server->FindSignature(
+        globals::gameConfig->GetSignature("CItemSelectionCriteria_BAddCondition")));
+
+    if (!CItemSelectionCriteria_BAddCondition)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CItemSelectionCriteria_BAddCondition\'");
+    }
+
+    CItemGeneration_GenerateRandomItem = (decltype(CItemGeneration_GenerateRandomItem))(modules::server->FindSignature(
+        globals::gameConfig->GetSignature("CItemGeneration_GenerateRandomItem")));
+
+    if (!CItemGeneration_GenerateRandomItem)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CItemGeneration_GenerateRandomItem\'");
+    }
+
     // Listener is added in ServerStartup as entity system is not initialised at this stage.
 }
 

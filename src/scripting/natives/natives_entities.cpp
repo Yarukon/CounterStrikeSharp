@@ -430,6 +430,65 @@ void DispatchSpawn(ScriptContext& script_context)
     CBaseEntity_DispatchSpawn(pEntity, pEntityKeyValues);
 }
 
+enum EEconItemQuality
+{
+    AE_UNDEFINED = -1,
+
+    AE_NORMAL = 0,
+    AE_GENUINE = 1,
+    AE_VINTAGE,
+    AE_UNUSUAL,
+    AE_UNIQUE,
+    AE_COMMUNITY,
+    AE_DEVELOPER,
+    AE_SELFMADE,
+    AE_CUSTOMIZED,
+    AE_STRANGE,
+    AE_COMPLETED,
+    AE_HAUNTED,
+    AE_TOURNAMENT,
+    AE_FAVORED,
+
+    AE_MAX_TYPES,
+};
+
+void* CreateWeaponEntity(ScriptContext& script_context)
+{
+    if (!CItemSelectionCriteria_BAddCondition)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CItemSelectionCriteria_BAddCondition\'");
+        return nullptr;
+    }
+
+    if (!CItemGeneration_GenerateRandomItem)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CItemGeneration_GenerateRandomItem\'");
+        return nullptr;
+    }
+
+    void* itemGenerationPtr = CBaseGameSystemFactory::GetGlobalPtrByName("CItemGeneration");
+    if (!itemGenerationPtr)
+    {
+        CSSHARP_CORE_CRITICAL("Invalid 'CItemGeneration' pointer");
+        return nullptr;
+    }
+    
+    CItemSelectionCriteria criteria;
+    criteria.m_nItemQuality = AE_NORMAL;
+    criteria.m_bQualitySet = true;
+    CItemSelectionCriteria_BAddCondition(&criteria, "name", k_EOperator_String_EQ, script_context.GetArgument<const char*>(0), true);
+
+    void* entity = CItemGeneration_GenerateRandomItem(itemGenerationPtr, &criteria, vec3_origin, vec3_angle);
+
+    if (!entity)
+    {
+        criteria.m_nItemQuality = AE_UNIQUE;
+        entity = CItemGeneration_GenerateRandomItem(itemGenerationPtr, &criteria, vec3_origin, vec3_angle);
+    }
+
+    return entity;
+}
+
 void AcceptInput(ScriptContext& script_context)
 {
     if (!CEntityInstance_AcceptInput)
@@ -486,6 +545,7 @@ REGISTER_NATIVES(entities, {
     ScriptEngine::RegisterNativeHandler("UNHOOK_ENTITY_OUTPUT", UnhookEntityOutput);
     ScriptEngine::RegisterNativeHandler("EMIT_SOUND", EmitSound);
     ScriptEngine::RegisterNativeHandler("DISPATCH_SPAWN", DispatchSpawn);
+    ScriptEngine::RegisterNativeHandler("CREATE_WEAPON_ENTITY", CreateWeaponEntity);
     ScriptEngine::RegisterNativeHandler("ACCEPT_INPUT", AcceptInput);
     ScriptEngine::RegisterNativeHandler("ADD_ENTITY_IO_EVENT", AddEntityIOEvent);
 })

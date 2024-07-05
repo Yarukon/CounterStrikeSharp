@@ -31,6 +31,8 @@
 #include "core/soundeventparam.h"
 #include "core/game_system.h"
 
+#include "core/item_selection_criteria.h"
+
 namespace counterstrikesharp {
 class ScriptCallback;
 
@@ -132,6 +134,13 @@ inline bool (*CSoundOpGameSystem_SetSoundEventParam)(IGameSystem* pSoundOpGameSy
                                   char a7);
 
 inline void (*CBaseEntity_DispatchSpawn)(CEntityInstance* pEntity, CEntityKeyValues* pEntityKeyValues);
+
+inline void* (*CItemSelectionCriteria_BAddCondition)(CItemSelectionCriteria* _this, const char* pszField, EItemCriteriaOperator eOp, const char* pszValue, bool bRequired);
+
+inline void* (*CItemGeneration_GenerateRandomItem)(void* _this,
+                                                  CItemSelectionCriteria* criteria,
+                                                  const Vector& vecOrigin,
+                                                  const QAngle& vecAngles);
 
 // Do it in here because i didn't found a good place to do this
 inline void (*CEntityInstance_AcceptInput)(CEntityInstance* pThis, const char* pInputName, CEntityInstance* pActivator, CEntityInstance* pCaller, variant_t* value, int nOutputID);
