@@ -72,6 +72,12 @@ namespace CounterStrikeSharp.API.Core
         /// </summary>
         string ModulePath { get; internal set; }
 
+        /// <summary>
+        /// When hotreload is disabled, unload and reload will not be called.
+        /// The plugin will load only once.
+        /// </summary>
+        bool DisableHotReload { get; set; }
+
         ILogger Logger { get; set; }
 
         IStringLocalizer Localizer { get; set; }

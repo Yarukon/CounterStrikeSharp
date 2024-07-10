@@ -65,6 +65,8 @@ namespace CounterStrikeSharp.API.Core
         public ICommandManager CommandManager { get; set; }
 
         public IStringLocalizer Localizer { get; set; }
+
+        public virtual bool DisableHotReload { get; set; } = false;
         
         public virtual void Load(bool hotReload)
         {

@@ -17,6 +17,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using CounterStrikeSharp.API.Core.Commands;
 using CounterStrikeSharp.API.Core.Hosting;
 using CounterStrikeSharp.API.Core.Plugin;
@@ -211,6 +212,11 @@ namespace CounterStrikeSharp.API.Core
                         break;
                     }
 
+                    if (plugin.Plugin.DisableHotReload)
+                    {
+                        info.ReplyToCommand($"hotreload disabled. \"{pluginIdentifier}\"");
+                        break;
+                    }
                     plugin.Unload(false);
                     break;
                 }
@@ -234,7 +240,10 @@ namespace CounterStrikeSharp.API.Core
                         break;
                     }
 
-                    plugin.Unload(true);
+                    if (plugin.Plugin.DisableHotReload) {
+                        info.ReplyToCommand($"hotreload disabled. \"{pluginIdentifier}\"");
+                        break;
+                    }
                     plugin.Load(true);
                     plugin.Plugin.OnAllPluginsLoaded(true);
                     break;

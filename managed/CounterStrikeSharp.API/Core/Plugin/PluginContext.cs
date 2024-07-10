@@ -50,7 +50,7 @@ namespace CounterStrikeSharp.API.Core.Plugin
         private readonly string _path;
         private readonly FileSystemWatcher _fileWatcher;
         private readonly IServiceProvider _applicationServiceProvider;
-        
+
         public string FilePath => _path;
         private IServiceScope _serviceScope;
 
@@ -65,7 +65,7 @@ namespace CounterStrikeSharp.API.Core.Plugin
             _hostConfiguration = hostConfiguration;
             _path = path;
             PluginId = id;
-            
+
             Loader = PluginLoader.CreateFromAssemblyFile(path,
                 new[]
                 {
@@ -77,7 +77,7 @@ namespace CounterStrikeSharp.API.Core.Plugin
                     config.IsUnloadable = true;
                     config.PreferSharedTypes = true;
                 });
-            
+
             if (CoreConfig.PluginHotReloadEnabled)
             {
                 _fileWatcher = new FileSystemWatcher
@@ -87,6 +87,7 @@ namespace CounterStrikeSharp.API.Core.Plugin
 
                 _fileWatcher.Deleted += async (s, e) =>
                 {
+                    if (this.Plugin != null && this.Plugin.DisableHotReload) { return; }
                     Server.NextWorldUpdate(() =>
                     {
                         if (e.FullPath == path)
@@ -105,6 +106,11 @@ namespace CounterStrikeSharp.API.Core.Plugin
 
         private Task OnReloadedAsync(object sender, PluginReloadedEventArgs eventargs)
         {
+            if (this.Plugin.DisableHotReload)
+            {
+                _logger.LogInformation("Plugin file update found but hotreload disabled. {Name}", Plugin.ModuleName);
+                return Task.CompletedTask;
+            }
             Server.NextWorldUpdate(() =>
             {
                 _logger.LogInformation("Reloading plugin {Name}", Plugin.ModuleName);
@@ -113,14 +119,14 @@ namespace CounterStrikeSharp.API.Core.Plugin
                 Load(hotReload: true);
                 Plugin.OnAllPluginsLoaded(hotReload: true);
             });
-            
+
             return Task.CompletedTask;
         }
 
         public void Load(bool hotReload = false)
         {
             if (State == PluginState.Loaded) return;
-            
+
             using (Loader.EnterContextualReflection())
             {
                 var defaultAssembly = Loader.LoadDefaultAssembly();
@@ -178,7 +184,7 @@ namespace CounterStrikeSharp.API.Core.Plugin
                         method?.Invoke(pluginServiceCollection, new object[] { serviceCollection });
                     }
                 }
-                
+
                 serviceCollection.AddScoped<ICommandManager>(c => _commandManager);
                 serviceCollection.DecorateSingleton<ICommandManager, PluginCommandManagerDecorator>();
 
