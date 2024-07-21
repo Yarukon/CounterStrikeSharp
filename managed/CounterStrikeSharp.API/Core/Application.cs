@@ -214,7 +214,7 @@ namespace CounterStrikeSharp.API.Core
 
                     if (plugin.Plugin.DisableHotReload)
                     {
-                        info.ReplyToCommand($"hotreload disabled. \"{pluginIdentifier}\"");
+                        info.ReplyToCommand($"Hot-Reload is disabled for plugin \"{pluginIdentifier}\"");
                         break;
                     }
                     plugin.Unload(false);
@@ -241,7 +241,7 @@ namespace CounterStrikeSharp.API.Core
                     }
 
                     if (plugin.Plugin.DisableHotReload) {
-                        info.ReplyToCommand($"hotreload disabled. \"{pluginIdentifier}\"");
+                        info.ReplyToCommand($"Hot-Reload is disabled for plugin \"{pluginIdentifier}\"");
                         break;
                     }
                     plugin.Load(true);

@@ -108,9 +108,10 @@ namespace CounterStrikeSharp.API.Core.Plugin
         {
             if (this.Plugin.DisableHotReload)
             {
-                _logger.LogInformation("Plugin file update found but hotreload disabled. {Name}", Plugin.ModuleName);
+                _logger.LogInformation("Plugin file update found but Hot-Reload is disabled for plugin {Name}.", Plugin.ModuleName);
                 return Task.CompletedTask;
             }
+
             Server.NextWorldUpdate(() =>
             {
                 _logger.LogInformation("Reloading plugin {Name}", Plugin.ModuleName);
