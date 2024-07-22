@@ -244,6 +244,7 @@ namespace CounterStrikeSharp.API.Core
                         info.ReplyToCommand($"Hot-Reload is disabled for plugin \"{pluginIdentifier}\"");
                         break;
                     }
+                    plugin.Unload(true);
                     plugin.Load(true);
                     plugin.Plugin.OnAllPluginsLoaded(true);
                     break;
