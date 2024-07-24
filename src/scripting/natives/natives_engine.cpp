@@ -214,45 +214,6 @@ void* GetFirstGameSystemPtr(ScriptContext& scriptContext)
     return *CBaseGameSystemFactory::sm_pFirst;
 }
 
-void ReplicateToClient(ScriptContext& scriptContext)
-{
-    int slot = scriptContext.GetArgument<int>(0);
-    if (slot < 0 || slot > 63)
-    {
-        scriptContext.ThrowNativeError("Player slot %d out of range", slot);
-        return;
-    }
-
-    CPlayer* player = globals::playerManager.GetPlayerBySlot(slot);
-
-    if (!player || !player->IsConnected() || player->IsFakeClient())
-    {
-        scriptContext.ThrowNativeError("Invalid player for slot %d", slot);
-        return;
-    }
-
-    CServerSideClient* pClient = globals::GetClientBySlot(player->m_slot);
-    if (!pClient)
-    {
-        scriptContext.ThrowNativeError("Couldn't find client %s", player->GetName());
-        return;
-    }
-
-    INetworkMessageInternal* netMsg = globals::networkMessages->FindNetworkMessagePartial("SetConVar");
-    if (!netMsg)
-    {
-        scriptContext.ThrowNativeError("Couldn't find network message for this to work!");
-        return;
-    }
-
-    auto msg = netMsg->AllocateMessage()->ToPB<CNETMsg_SetConVar>();
-    CMsg_CVars_CVar* cvar = msg->mutable_convars()->add_cvars();
-    cvar->set_name(scriptContext.GetArgument<const char*>(1));
-    cvar->set_value(scriptContext.GetArgument<const char*>(2));
-
-    pClient->GetNetChannel()->SendNetMessage(netMsg, msg, BUF_RELIABLE);
-}
-
 REGISTER_NATIVES(engine, {
     ScriptEngine::RegisterNativeHandler("GET_GAME_DIRECTORY", GetGameDirectory);
     ScriptEngine::RegisterNativeHandler("GET_MAP_NAME", GetMapName);
@@ -277,6 +238,5 @@ REGISTER_NATIVES(engine, {
     ScriptEngine::RegisterNativeHandler("GET_COMMAND_PARAM_VALUE", GetCommandParamValue);
     ScriptEngine::RegisterNativeHandler("PRINT_TO_SERVER_CONSOLE", PrintToServerConsole);
     ScriptEngine::RegisterNativeHandler("GET_FIRST_GAMESYSTEM_PTR", GetFirstGameSystemPtr);
-    ScriptEngine::RegisterNativeHandler("REPLICATE_TO_CLIENT", ReplicateToClient);
 })
 } // namespace counterstrikesharp
