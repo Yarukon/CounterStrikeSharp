@@ -157,17 +157,10 @@ namespace CounterStrikeSharp.API.Core
                         break;
                     }
 
-                    // If our arugment doesn't end in ".dll" - try and construct a path similar to PluginName/PluginName.dll.
+                    // If our argument doesn't end in ".dll" - try and construct a path similar to PluginName/PluginName.dll.
                     // We'll assume we have a full path if we have ".dll".
                     var path = info.GetArg(2);
-                    if (!path.EndsWith(".dll"))
-                    {
-                        path = Path.Combine(_scriptHostConfiguration.RootPath, $"plugins/{path}/{path}.dll");
-                    }
-                    else
-                    {
-                        path = Path.Combine(_scriptHostConfiguration.RootPath, path);
-                    }
+                    path = Path.Combine(_scriptHostConfiguration.RootPath, !path.EndsWith(".dll") ? $"plugins/{path}/{path}.dll" : path);
 
                     var plugin = _pluginContextQueryHandler.FindPluginByModulePath(path);
 
@@ -205,7 +198,13 @@ namespace CounterStrikeSharp.API.Core
                     }
 
                     var pluginIdentifier = info.GetArg(2);
-                    IPluginContext? plugin = _pluginContextQueryHandler.FindPluginByIdOrName(pluginIdentifier);
+                    string path;
+                    path = Path.Combine(_scriptHostConfiguration.RootPath,
+                        !pluginIdentifier.EndsWith(".dll") ? $"plugins/{pluginIdentifier}/{pluginIdentifier}.dll" : pluginIdentifier);
+
+                    var plugin = _pluginContextQueryHandler.FindPluginByIdOrName(pluginIdentifier)
+                                 ?? _pluginContextQueryHandler.FindPluginByModulePath(path);
+
                     if (plugin == null)
                     {
                         info.ReplyToCommand($"Could not unload plugin \"{pluginIdentifier}\"");
@@ -259,7 +258,7 @@ namespace CounterStrikeSharp.API.Core
                     break;
             }
         }
-        
+
         private void OnLangCommand(CCSPlayerController? player, CommandInfo command)
         {
             if (player == null) return;
