@@ -7,3 +7,8 @@ FIND_SIGNATURE: modulePath:string, signature:string -> pointer
 GET_NETWORK_VECTOR_SIZE: vec:pointer -> int
 GET_NETWORK_VECTOR_ELEMENT_AT: vec:pointer, index:int -> pointer
 REMOVE_ALL_NETWORK_VECTOR_ELEMENTS: networkVector:pointer -> void
+
+HOOK_CREATE: functionAddress:pointer, detourAddress:pointer -> pointer
+HOOK_ENABLE: funchook_instance:pointer -> void
+HOOK_DISABLE: funchook_instance:pointer -> void
+HOOK_DESTROY: funchook_instance:pointer -> void

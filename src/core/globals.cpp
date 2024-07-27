@@ -39,6 +39,7 @@ CModule* tier0 = nullptr;
 CModule* server = nullptr;
 CModule* schemasystem = nullptr;
 CModule* vscript = nullptr;
+CModule* networksystem = nullptr;
 } // namespace modules
 
 namespace globals {
@@ -110,6 +111,7 @@ void Initialize()
     modules::server = modules::GetModuleByName(MODULE_PREFIX "server" MODULE_EXT);
     modules::schemasystem = modules::GetModuleByName(MODULE_PREFIX "schemasystem" MODULE_EXT);
     modules::vscript = modules::GetModuleByName(MODULE_PREFIX "vscript" MODULE_EXT);
+    modules::networksystem = modules::GetModuleByName(MODULE_PREFIX "networksystem" MODULE_EXT);
 
     interfaces::Initialize();
 

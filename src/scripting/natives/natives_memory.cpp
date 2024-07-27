@@ -17,6 +17,8 @@
 #include <ios>
 #include <sstream>
 
+#include <funchook.h>
+
 #include "scripting/autonative.h"
 #include "core/function.h"
 #include "scripting/script_engine.h"
@@ -153,6 +155,70 @@ void RemoveAllNetworkVectorElements(ScriptContext& script_context)
     vec->RemoveAll();
 }
 
+funchook_t* Hook_Create(ScriptContext& script_context)
+{
+    auto m_hook = funchook_create();
+
+    uintptr_t addr = script_context.GetArgument<uintptr_t>(0);
+
+    if (addr == 0)
+    {
+        script_context.ThrowNativeError("Invalid address");
+        return nullptr;
+    }
+
+    void* detour = script_context.GetArgument<void*>(1);
+
+    if (!detour)
+    {
+        script_context.ThrowNativeError("Invalid detour");
+        return nullptr;
+    }
+
+    funchook_prepare(m_hook, (void**)addr, detour);
+
+    return m_hook;
+}
+
+void Hook_Enable(ScriptContext& script_context)
+{
+    funchook_t* hook = script_context.GetArgument<funchook_t*>(0);
+
+    if (!hook)
+    {
+        script_context.ThrowNativeError("Invalid hook instance");
+        return;
+    }
+
+    funchook_install(hook, 0);
+}
+
+void Hook_Disable(ScriptContext& script_context)
+{
+    funchook_t* hook = script_context.GetArgument<funchook_t*>(0);
+
+    if (!hook)
+    {
+        script_context.ThrowNativeError("Invalid hook instance");
+        return;
+    }
+
+    funchook_uninstall(hook, 0);
+}
+
+void Hook_Destroy(ScriptContext& script_context)
+{
+    funchook_t* hook = script_context.GetArgument<funchook_t*>(0);
+
+    if (!hook)
+    {
+        script_context.ThrowNativeError("Invalid hook instance");
+        return;
+    }
+
+    funchook_destroy(hook);
+}
+
 REGISTER_NATIVES(memory, {
     ScriptEngine::RegisterNativeHandler("CREATE_VIRTUAL_FUNCTION", CreateVirtualFunction);
     ScriptEngine::RegisterNativeHandler("CREATE_VIRTUAL_FUNCTION_BY_SIGNATURE",
@@ -164,5 +230,11 @@ REGISTER_NATIVES(memory, {
     ScriptEngine::RegisterNativeHandler("GET_NETWORK_VECTOR_SIZE", GetNetworkVectorSize);
     ScriptEngine::RegisterNativeHandler("GET_NETWORK_VECTOR_ELEMENT_AT", GetNetworkVectorElementAt);
     ScriptEngine::RegisterNativeHandler("REMOVE_ALL_NETWORK_VECTOR_ELEMENTS", RemoveAllNetworkVectorElements);
+
+    // Func Hooks
+    ScriptEngine::RegisterNativeHandler("HOOK_CREATE", Hook_Create);
+    ScriptEngine::RegisterNativeHandler("HOOK_ENABLE", Hook_Enable);
+    ScriptEngine::RegisterNativeHandler("HOOK_DISABLE", Hook_Disable);
+    ScriptEngine::RegisterNativeHandler("HOOK_DESTROY", Hook_Destroy);
 })
 } // namespace counterstrikesharp

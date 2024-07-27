@@ -26,6 +26,7 @@ using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
+using CounterStrikeSharp.API.Modules.Memory.Interop;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,8 @@ namespace CounterStrikeSharp.API.Core
         public static Application Instance => _instance!;
 
         public static string RootDirectory => Instance._scriptHostConfiguration.RootPath;
+
+        internal string PluginGameDataDirectory = "";
 
         private readonly IScriptHostConfiguration _scriptHostConfiguration;
         private readonly GameDataProvider _gameDataProvider;
@@ -73,6 +76,11 @@ namespace CounterStrikeSharp.API.Core
             _coreConfig.Load();
             _gameDataProvider.Load();
 
+            // Interop
+            new PatternManager();
+            new HookManager();
+
+            // Commands
             var adminPath = Path.Combine(_scriptHostConfiguration.RootPath, "configs", "admins.json");
             Logger.LogInformation("Loading Admins from {Path}", adminPath);
             AdminManager.LoadAdminData(adminPath);
@@ -89,6 +97,20 @@ namespace CounterStrikeSharp.API.Core
             AdminManager.AddCommands();
 
             RegisterPluginCommands();
+
+            // Plugin GameData
+            PluginGameDataDirectory = Path.Combine(_scriptHostConfiguration.RootPath, "gamedata", "plugins");
+            if (!Path.Exists(PluginGameDataDirectory))
+            {
+                try
+                {
+                    Directory.CreateDirectory(PluginGameDataDirectory);
+                    Logger.LogInformation("Created Plugin GameData directory {Path}", PluginGameDataDirectory);
+                } catch (Exception ex)
+                {
+                    Logger.LogError($"{ex.Message}\n{ex.StackTrace}");
+                }
+            }
 
             _pluginManager.Load();
 
@@ -216,6 +238,7 @@ namespace CounterStrikeSharp.API.Core
                         info.ReplyToCommand($"Hot-Reload is disabled for plugin \"{pluginIdentifier}\"");
                         break;
                     }
+
                     plugin.Unload(false);
                     break;
                 }
@@ -295,6 +318,13 @@ namespace CounterStrikeSharp.API.Core
             _commandManager.RegisterCommand(new("css", "Counter-Strike Sharp options.", OnCSSCommand)
             {
                 ExecutableBy = CommandUsage.CLIENT_AND_SERVER,
+            });
+            _commandManager.RegisterCommand(new("css_hooks", "List tracked hooks.", (player, info) =>
+            {
+                HookManager.Instance.ListHooks();
+            })
+            {
+                ExecutableBy = CommandUsage.SERVER_ONLY,
             });
             _commandManager.RegisterCommand(new("css_plugins", "Counter-Strike Sharp plugin options.",
                 OnCSSPluginCommand)
