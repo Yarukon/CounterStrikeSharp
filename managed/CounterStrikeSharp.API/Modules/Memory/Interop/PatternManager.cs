@@ -100,7 +100,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                     }
                 }
 
-                nint address = FindPattern(attribute!.Pattern, attribute.Module);
+                nint address = FindPattern(pattern, attribute.Module);
                 if (address != 0)
                 {
                     Logger.LogInformation($"Found function {funcName} -> 0x{address:X}");
