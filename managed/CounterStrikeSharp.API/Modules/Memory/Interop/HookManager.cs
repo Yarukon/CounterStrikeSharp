@@ -137,8 +137,8 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         {
             if (TrackedHooks.TryGetValue(guid, out IHook? value))
             {
-                value?.Dispose();
-                Logger.LogInformation($"Hook [{value!.GUID.ToString()}] ({value.AssemblyName}) {value!.FriendlyName} Disposed.");
+                value.Dispose();
+                Logger.LogInformation($"Hook [{value.GUID.ToString()}] ({value.AssemblyName}) {value!.FriendlyName} Disposed.");
             }
             else
                 Logger.LogError($"Hook GUID {guid.ToString()} not found.");
