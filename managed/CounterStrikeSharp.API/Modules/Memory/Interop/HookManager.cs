@@ -127,7 +127,13 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 throw new Exception($"Failed to find pattern {pattern}");
         }
 
-        public void DisposeTrackedHooks(Guid guid)
+        public void DisposeTrackedHooks(IEnumerable<Guid> guids)
+        {
+            foreach (Guid guid in guids)
+                DisposeTrackedHook(guid);
+        }
+
+        public void DisposeTrackedHook(Guid guid)
         {
             if (TrackedHooks.TryGetValue(guid, out IHook? value))
             {
