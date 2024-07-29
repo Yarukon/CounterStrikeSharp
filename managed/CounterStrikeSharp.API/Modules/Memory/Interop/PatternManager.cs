@@ -79,6 +79,8 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         {
             Dictionary<string, PlatformData> gameDatas = [];
 
+            string callingAssembly = Assembly.GetCallingAssembly().GetName().Name ?? "<unknown>";
+
             Type selfType = self.GetType();
             var fields = selfType.GetFields(Flags).Select(field => (field, field.GetCustomAttribute<MemFuncAttribute>())).Where(tuple => tuple.Item2 != null);
             foreach (var (field, attribute) in fields)
@@ -95,7 +97,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                         pattern = IsWindows ? (string) value.Windows : (string) value.Linux;
                     else
                     {
-                        Logger.LogError($"Function {field.Name} defined config name but couldn't find key {pattern}.");
+                        Logger.LogError($"[{callingAssembly}] Function {field.Name} defined config name but couldn't find key {pattern}.");
                         continue;
                     }
                 }
@@ -103,12 +105,12 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 nint address = FindPattern(pattern, attribute.Module);
                 if (address != 0)
                 {
-                    Logger.LogInformation($"Found function {funcName} -> 0x{address:X}");
+                    Logger.LogInformation($"[{callingAssembly}] Found function 0x{address:X} | {funcName}");
                     Delegate @delegate = Marshal.GetDelegateForFunctionPointer(address, field.FieldType);
                     field.SetValue(self, @delegate);
                 }
                 else
-                    Logger.LogError($"Can't locate the address for {funcName}");
+                    Logger.LogError($"[{callingAssembly}] Can't locate the address for {funcName}");
             }
         }
     }

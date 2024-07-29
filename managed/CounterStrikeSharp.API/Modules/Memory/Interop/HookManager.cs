@@ -55,7 +55,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 MethodInfo? methodInfo = selfType.GetMethod(attribute!.DetourName, BindingFlags.Public | BindingFlags.Instance);
                 if (methodInfo == null)
                 {
-                    Logger.LogError($"Failed to find detour function {attribute!.DetourName}");
+                    Logger.LogError($"[{callingAssembly}] Failed to find detour function {attribute!.DetourName}");
                     continue;
                 }
 
@@ -66,7 +66,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                         pattern = IsWindows ? (string)value.Windows : (string)value.Linux;
                     else
                     {
-                        Logger.LogError($"Hook {friendlyName} defined config name but couldn't find key {pattern}.");
+                        Logger.LogError($"[{callingAssembly}] Hook {friendlyName} defined config name but couldn't find key {pattern}.");
                         continue;
                     }
                 }
@@ -74,14 +74,14 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 nint address = PatternManager.Instance.FindPattern(pattern, attribute.Module);
                 if (address == 0)
                 {
-                    Logger.LogError($"Failed to find pattern for function {friendlyName}");
+                    Logger.LogError($"[{callingAssembly}] Failed to find pattern for function {friendlyName}");
                     continue;
                 }
 
                 Type fieldType = field.FieldType;
                 if (!fieldType.IsGenericType || fieldType.GetGenericArguments().Length == 0)
                 {
-                    Logger.LogInformation($"Invalid field type for {friendlyName}");
+                    Logger.LogInformation($"[{callingAssembly}] Invalid field type for {friendlyName}");
                     continue;
                 }
 
@@ -96,7 +96,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
 
                 if (instance == null)
                 {
-                    Logger.LogError($"Failed to create hook instance for {friendlyName}");
+                    Logger.LogError($"[{callingAssembly}] Failed to create hook instance for {friendlyName}");
                     continue;
                 }
 
@@ -104,7 +104,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
 
                 instance?.GetType().GetMethod("Enable")?.Invoke(instance, null);
 
-                Logger.LogInformation($"Hooked function {friendlyName} -> 0x{address:X}");
+                Logger.LogInformation($"[{callingAssembly}] Hooked function 0x{address:X} | {friendlyName}");
                 (instance as IHook)?.OverrideAssemblyName(callingAssembly);
                 guidLists.Add((instance as IHook).GUID);
             }
