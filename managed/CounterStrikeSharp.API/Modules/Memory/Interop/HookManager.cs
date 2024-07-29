@@ -35,18 +35,12 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             Logger.LogInformation("Initialized HookManager.");
         }
 
-        /// <summary>
-        /// 注册带有MemHook Attribute的钩子
-        /// </summary>
-        /// <param name="self">带有该Attribute的实例</param>
-        /// <returns>成功注册的所有Hook GUID列表</returns>
 #pragma warning disable 8602, 8600 // Visual Studio真是有够烦的
-        public List<Guid> InitializeMemoryHooks(object self)
+        public List<Guid> InitializeMemoryHooks(object self, string configName = "")
         {
             string callingAssembly = Assembly.GetCallingAssembly()?.GetName()?.Name ?? "<unknown>";
             List<Guid> guidLists = [];
 
-            string lastRead = "";
             Dictionary<string, PlatformData> gameDatas = [];
 
             Type selfType = self.GetType();
@@ -55,16 +49,8 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             {
                 string friendlyName = attribute!.DetourName.Replace("Detour", "").Replace("detour", "");
 
-                if (!string.IsNullOrWhiteSpace(attribute.ConfigName))
-                {
-                    if (attribute.ConfigName != lastRead)
-                    {
-                        gameDatas = InteropGameData.ReadFrom(attribute.ConfigName);
-                        lastRead = attribute.ConfigName;
-                    }
-                }
-                else
-                    lastRead = "";
+                if (!string.IsNullOrWhiteSpace(configName))
+                    gameDatas = InteropGameData.ReadFrom(configName);
 
                 MethodInfo? methodInfo = selfType.GetMethod(attribute!.DetourName, BindingFlags.Public | BindingFlags.Instance);
                 if (methodInfo == null)
@@ -74,7 +60,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 }
 
                 string pattern = attribute.Pattern;
-                if (!string.IsNullOrWhiteSpace(lastRead))
+                if (!string.IsNullOrWhiteSpace(configName))
                 {
                     if (gameDatas.TryGetValue(pattern, out PlatformData value))
                         pattern = IsWindows ? (string)value.Windows : (string)value.Linux;
@@ -127,12 +113,12 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         }
 #pragma warning restore
 
-        public Hook<T> CreateFromAddress<T>(string friendlyName, nint address, T detour) where T : Delegate
+        public Hook<T> CreateFromAddress<T>(nint address, T detour) where T : Delegate
         {
             return new Hook<T>(address, detour);
         }
 
-        public Hook<T> CreateFromPattern<T>(string friendlyName, string pattern, T detour, CModule module = CModule.SERVER) where T : Delegate
+        public Hook<T> CreateFromPattern<T>(string pattern, T detour, CModule module = CModule.SERVER) where T : Delegate
         {
             nint address = PatternManager.Instance.FindPattern(pattern, module);
             if (address != 0)

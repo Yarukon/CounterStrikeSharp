@@ -319,6 +319,7 @@ namespace CounterStrikeSharp.API.Core
             {
                 ExecutableBy = CommandUsage.CLIENT_AND_SERVER,
             });
+
             _commandManager.RegisterCommand(new("css_hooks", "List tracked hooks.", (player, info) =>
             {
                 HookManager.Instance.ListHooks();
@@ -326,6 +327,15 @@ namespace CounterStrikeSharp.API.Core
             {
                 ExecutableBy = CommandUsage.SERVER_ONLY,
             });
+
+            _commandManager.RegisterCommand(new("css_dump_gamesystems", "Dump GameSystems.", (player, info) =>
+            {
+                GameSystemFactory.Dump();
+            })
+            {
+                ExecutableBy = CommandUsage.SERVER_ONLY,
+            });
+
             _commandManager.RegisterCommand(new("css_plugins", "Counter-Strike Sharp plugin options.",
                 OnCSSPluginCommand)
             {
@@ -337,6 +347,7 @@ namespace CounterStrikeSharp.API.Core
                             "  stop / unload - Unloads a plugin currently loaded.\n" +
                             "  restart / reload - Reloads a plugin currently loaded.",
             });
+
             _commandManager.RegisterCommand(new("css_lang", "Set Counter-Strike Sharp language.", OnLangCommand)
             {
                 ExecutableBy = CommandUsage.CLIENT_AND_SERVER,

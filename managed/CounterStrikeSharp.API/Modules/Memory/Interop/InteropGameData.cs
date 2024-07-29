@@ -17,6 +17,11 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             PropertyNameCaseInsensitive = true
         };
 
+        /// <summary>
+        /// Load custom gamedata, located in gamedata/plugins/
+        /// </summary>
+        /// <param name="configName">The name of the file you wanna load from (configName).json</param>
+        /// <returns>All the Key-Value Entry in config file, will be empty if failed</returns>
         public static Dictionary<string, PlatformData> ReadFrom(string configName)
         {
             try

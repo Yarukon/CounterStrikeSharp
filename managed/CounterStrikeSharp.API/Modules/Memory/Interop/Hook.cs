@@ -57,6 +57,8 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         // 给正常创建的途径使用的构建方法, 因为反射创建实例无法使用CallerArgumentExpression (当然正常途径也可以用上面的方法)
         public Hook(nint address, T detour, [CallerArgumentExpression(nameof(detour))] string detourName = "<unknown>") : this(detourName, address, detour)
         {
+            // 需要覆盖 因为父级调用名字会不正确
+            this.AssemblyName = Assembly.GetCallingAssembly()?.GetName().Name ?? "<unknown>";
         }
 
         public virtual T Original

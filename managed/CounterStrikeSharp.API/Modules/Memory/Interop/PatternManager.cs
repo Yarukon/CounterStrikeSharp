@@ -75,30 +75,21 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         }
 
 #pragma warning disable 8602, 8600 // Visual Studio真是有够烦的
-        public void InitializeMemoryFunctions(object self)
+        public void InitializeMemoryFunctions(object self, string configName = "")
         {
-            string lastRead = "";
             Dictionary<string, PlatformData> gameDatas = [];
 
             Type selfType = self.GetType();
             var fields = selfType.GetFields(Flags).Select(field => (field, field.GetCustomAttribute<MemFuncAttribute>())).Where(tuple => tuple.Item2 != null);
             foreach (var (field, attribute) in fields)
             {
-                if (!string.IsNullOrWhiteSpace(attribute.ConfigName))
-                {
-                    if (attribute.ConfigName != lastRead)
-                    {
-                        gameDatas = InteropGameData.ReadFrom(attribute.ConfigName);
-                        lastRead = attribute.ConfigName;
-                    }
-                }
-                else
-                    lastRead = "";
+                if (!string.IsNullOrWhiteSpace(configName))
+                    gameDatas = InteropGameData.ReadFrom(configName);
 
                 string funcName = field.Name;
 
                 string pattern = attribute!.Pattern;
-                if (!string.IsNullOrWhiteSpace(lastRead))
+                if (!string.IsNullOrWhiteSpace(configName))
                 {
                     if (gameDatas.TryGetValue(pattern, out PlatformData value))
                         pattern = IsWindows ? (string) value.Windows : (string) value.Linux;

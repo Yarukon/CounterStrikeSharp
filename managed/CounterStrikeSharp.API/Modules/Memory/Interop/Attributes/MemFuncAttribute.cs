@@ -7,24 +7,15 @@ using System.Threading.Tasks;
 
 namespace CounterStrikeSharp.API.Modules.Memory.Interop.Attributes
 {
+    /// <summary>
+    /// Attribute for Memory functions
+    /// </summary>
+    /// <param name="pattern">The Pattern you wanna search, this will be config entry name when defined configName on initializing</param>
+    /// <param name="module">The module you wanna search in</param>
     [AttributeUsage(AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public class MemFuncAttribute : Attribute
+    public class MemFuncAttribute(string pattern, CModule module = CModule.SERVER) : Attribute
     {
-        public string Pattern { get; }
-        public string ConfigName { get; }
-        public CModule Module { get; }
-
-        /// <summary>
-        /// MemFunc Attribute
-        /// </summary>
-        /// <param name="pattern">The Pattern you wanna search, this will be config entry name when configName is not empty</param>
-        /// <param name="configName">Will find from gamedata/plugins/(configName).json when defined</param>
-        /// <param name="module">The module you wanna search in</param>
-        public MemFuncAttribute(string pattern, string configName = "", CModule module = CModule.SERVER)
-        {
-            Pattern = pattern;
-            ConfigName = configName;
-            Module = module;
-        }
+        public string Pattern => pattern;
+        public CModule Module => module;
     }
 }

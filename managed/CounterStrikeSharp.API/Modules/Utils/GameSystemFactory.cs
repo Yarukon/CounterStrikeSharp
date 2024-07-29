@@ -19,10 +19,11 @@ namespace CounterStrikeSharp.API.Modules.Utils
             CBaseGameSystem* pFirst = (CBaseGameSystem*) NativeAPI.GetFirstGamesystemPtr();
 
             Application.Instance.Logger.LogInformation("-------- G A M E  S Y S T E M S --------");
+            Application.Instance.Logger.LogInformation("Address | Name");
             while (pFirst != null)
             {
                 string? _name = pFirst->GetName();
-                Application.Instance.Logger.LogInformation($"{_name ?? "<unnamed>"} > {pFirst->m_pInstance:X}");
+                Application.Instance.Logger.LogInformation($"{pFirst->m_pInstance:X12} | {_name ?? "<unnamed>"}");
                 pFirst = pFirst->m_pNext;
             }
         }
