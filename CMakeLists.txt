@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.18)
 project(counterstrikesharp C CXX ASM)
 
 include("makefiles/shared.cmake")
+include("makefiles/protobuf.cmake")
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -101,20 +102,15 @@ set(SOURCE_FILES
     src/core/item_selection_criteria.h
 )
 
-set(PROTO_GEN_CPP
-    src/protobuf/generated/network_connection.pb.cc
-    src/protobuf/generated/networkbasetypes.pb.cc
-)
-
 # Sources
-add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES} ${PROTO_GEN_CPP} ${NATIVES_SOURCES} ${CONVERSIONS_SOURCES} ${CONVERSIONS_HEADERS})
+add_library(${PROJECT_NAME} SHARED ${PROTO_OUTPUT} ${SOURCE_FILES} ${NATIVES_SOURCES} ${CONVERSIONS_SOURCES} ${CONVERSIONS_HEADERS})
 
 target_include_directories(
     ${PROJECT_NAME}
     PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/cs2_sdk
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/protobuf/generated
+    ${CMAKE_CURRENT_BINARY_DIR}/protobufs
 )
 
 if(LINUX)
