@@ -228,8 +228,6 @@ void ReplicateToClient(ScriptContext& scriptContext)
     cvar->set_value(scriptContext.GetArgument<const char*>(2));
 
     pClient->GetNetChannel()->SendNetMessage(netMsg, msg, BUF_RELIABLE);
-
-    netMsg->DeallocateMessage(msg);
 }
 
 REGISTER_NATIVES(commands, {
