@@ -23,6 +23,8 @@
 #include "scripting/script_engine.h"
 #include "core/log.h"
 
+#include "tier0/memdbgon.h"
+
 namespace counterstrikesharp {
 
 static void AddCommand(ScriptContext& script_context)
@@ -227,7 +229,9 @@ void ReplicateToClient(ScriptContext& scriptContext)
     cvar->set_name(scriptContext.GetArgument<const char*>(1));
     cvar->set_value(scriptContext.GetArgument<const char*>(2));
 
-    pClient->GetNetChannel()->SendNetMessage(netMsg, msg, BUF_RELIABLE);
+    pClient->GetNetChannel()->SendNetMessage(msg, BUF_RELIABLE);
+
+    delete msg;
 }
 
 REGISTER_NATIVES(commands, {
