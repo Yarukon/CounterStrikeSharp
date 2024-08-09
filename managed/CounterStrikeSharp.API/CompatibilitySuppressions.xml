@@ -357,6 +357,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:CounterStrikeSharp.API.Modules.Memory.VirtualFunctions.StateChanged</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>F:CounterStrikeSharp.API.Modules.Memory.VirtualFunctions.StateChangedFunc</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>F:CounterStrikeSharp.API.Modules.Memory.VirtualFunctions.TerminateRound</Target>
     <Left>.\ApiCompat\v202.dll</Left>
     <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
