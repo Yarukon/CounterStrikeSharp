@@ -87,7 +87,7 @@ namespace CounterStrikeSharp.API.Modules.Utils
 
         private static readonly byte[] Zero = new byte[60];
 
-        // Build keyvalues and passthrough to C++ side
+        // Build keyvalues and passthrough to native side
         internal unsafe void Build(KeyValuesEntry** entries)
         {
             int arrayOffset = 0;
