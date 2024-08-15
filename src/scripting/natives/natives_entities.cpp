@@ -485,7 +485,7 @@ int DispatchParticle2(ScriptContext& script_context)
     CRecipientFilter _filter;
     _filter.AddRecipientsByMasking(filter);
 
-    return DispatchParticleEffect2(pszParticleName, vec, ang, entity, false, -1, &_filter);
+    return DispatchParticleEffect2(pszParticleName, vec, ang, entity, false, -1, &_filter, 0);
 }
 
 void AcceptInput(ScriptContext& script_context)

@@ -149,7 +149,7 @@ inline int (*DispatchParticleEffect)(const char* pszParticleName,
                                                 CUtlSymbolLarge iAttachmentName,
                                                 bool bResetAllParticlesOnEntity,
                                                 int nSplitScreenPlayerSlot,
-                                                IRecipientFilter* a7,
+                                                IRecipientFilter* filter,
                                                 byte* a8);
 
 inline int (*DispatchParticleEffect2)(const char* pszParticleName,
@@ -158,7 +158,8 @@ inline int (*DispatchParticleEffect2)(const char* pszParticleName,
                                          CEntityInstance* entity,
                                          bool bResetAllParticlesOnEntity,
                                          int nSplitScreenPlayerSlot,
-                                         IRecipientFilter* filter);
+                                         IRecipientFilter* filter,
+                                         byte* a8);
 
 // Do it in here because i didn't found a good place to do this
 inline void (*CEntityInstance_AcceptInput)(CEntityInstance* pThis, const char* pInputName, CEntityInstance* pActivator, CEntityInstance* pCaller, variant_t* value, int nOutputID);
