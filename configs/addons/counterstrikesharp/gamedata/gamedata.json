@@ -280,5 +280,12 @@
       "windows": "E8 ? ? ? ? 4C ? ? 48 ? ? 49 ? ? E8 ? ? ? ? 48 ? ? 48 ? ? 75",
       "linux": ""
     }
+  },
+  "DispatchParticleEffect2": {
+    "signatures": {
+      "library": "server",
+      "windows": "E8 ? ? ? ? 48 ? ? ? ? ? ? 8B ? ? 39 9F",
+      "linux": ""
+    }
   }
 }
