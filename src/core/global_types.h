@@ -1,0 +1,68 @@
+#include "platform.h"
+
+// For EKVEntry
+enum KeyValuesType_t : uint32
+{
+    TYPE_BOOL,
+    TYPE_INT,
+    TYPE_UINT,
+    TYPE_INT64,
+    TYPE_UINT64,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_STRING,
+    TYPE_POINTER,
+    TYPE_STRING_TOKEN,
+    TYPE_EHANDLE,
+    TYPE_COLOR,
+    TYPE_VECTOR,
+    TYPE_VECTOR2D,
+    TYPE_VECTOR4D,
+    TYPE_QUATERNION,
+    TYPE_QANGLE,
+    TYPE_MATRIX3X4
+};
+
+enum EEconItemQuality
+{
+    AE_UNDEFINED = -1,
+
+    AE_NORMAL = 0,
+    AE_GENUINE = 1,
+    AE_VINTAGE,
+    AE_UNUSUAL,
+    AE_UNIQUE,
+    AE_COMMUNITY,
+    AE_DEVELOPER,
+    AE_SELFMADE,
+    AE_CUSTOMIZED,
+    AE_STRANGE,
+    AE_COMPLETED,
+    AE_HAUNTED,
+    AE_TOURNAMENT,
+    AE_FAVORED,
+
+    AE_MAX_TYPES,
+};
+
+enum ParticleAttachment_t : uint32
+{
+    PATTACH_INVALID = 0xffffffff,
+    PATTACH_ABSORIGIN = 0x0, // Spawn at entity origin
+    PATTACH_ABSORIGIN_FOLLOW = 0x1, // Spawn at and follow entity origin
+    PATTACH_CUSTOMORIGIN = 0x2,
+    PATTACH_CUSTOMORIGIN_FOLLOW = 0x3,
+    PATTACH_POINT = 0x4, // Spawn at attachment point
+    PATTACH_POINT_FOLLOW = 0x5, // Spawn at and follow attachment point
+    PATTACH_EYES_FOLLOW = 0x6,
+    PATTACH_OVERHEAD_FOLLOW = 0x7,
+    PATTACH_WORLDORIGIN = 0x8,
+    PATTACH_ROOTBONE_FOLLOW = 0x9,
+    PATTACH_RENDERORIGIN_FOLLOW = 0xa,
+    PATTACH_MAIN_VIEW = 0xb,
+    PATTACH_WATERWAKE = 0xc,
+    PATTACH_CENTER_FOLLOW = 0xd,
+    PATTACH_CUSTOM_GAME_STATE_1 = 0xe,
+    PATTACH_HEALTHBAR = 0xf,
+    MAX_PATTACH_TYPES = 0x10,
+};

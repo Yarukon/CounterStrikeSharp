@@ -774,6 +774,37 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
+        public static int DispatchParticle(IntPtr entity, string particlename, ulong filter, uint attachmenttype, byte attatchmentpoint, string attachmentname){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(entity);
+			ScriptContext.GlobalScriptContext.Push(particlename);
+			ScriptContext.GlobalScriptContext.Push(filter);
+			ScriptContext.GlobalScriptContext.Push(attachmenttype);
+			ScriptContext.GlobalScriptContext.Push(attatchmentpoint);
+			ScriptContext.GlobalScriptContext.Push(attachmentname);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x33D74BFE);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			return (int)ScriptContext.GlobalScriptContext.GetResult(typeof(int));
+			}
+		}
+
+        public static int DispatchParticle2(IntPtr entity, string particlename, ulong filter, IntPtr origin, IntPtr angle){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(entity);
+			ScriptContext.GlobalScriptContext.Push(particlename);
+			ScriptContext.GlobalScriptContext.Push(filter);
+			ScriptContext.GlobalScriptContext.Push(origin);
+			ScriptContext.GlobalScriptContext.Push(angle);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0xAEC0CB8C);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			return (int)ScriptContext.GlobalScriptContext.GetResult(typeof(int));
+			}
+		}
+
         public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();

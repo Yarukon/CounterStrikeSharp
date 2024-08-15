@@ -15,5 +15,7 @@ UNHOOK_ENTITY_OUTPUT: classname:string, outputName:string, callback:func, mode:H
 EMIT_SOUND: entIndex:uint, soundName:string, pitch:float, volume:float, suppliedCustomFilter:bool, recipients:uint64 -> void
 DISPATCH_SPAWN: entity:pointer, count:int, entries:pointer -> void
 CREATE_WEAPON_ENTITY: classname:string -> pointer
+DISPATCH_PARTICLE: entity:pointer, particleName:string, filter:uint64, attachmentType:uint, attatchmentPoint:byte, attachmentName:string -> int
+DISPATCH_PARTICLE2: entity:pointer, particleName:string, filter:uint64, origin:pointer, angle:pointer -> int
 ACCEPT_INPUT: pThis:pointer, inputName:string, activator:pointer, caller:pointer, value:string, outputID:int -> void
 ADD_ENTITY_IO_EVENT: pTarget:pointer, inputName:string, activator:pointer, caller:pointer, value:string, delay:float, outputID:int -> void

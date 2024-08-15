@@ -142,6 +142,24 @@ inline void* (*CItemGeneration_GenerateRandomItem)(void* _this,
                                                   const Vector& vecOrigin,
                                                   const QAngle& vecAngles);
 
+inline int (*DispatchParticleEffect)(const char* pszParticleName,
+                                                int iAttachType,
+                                                CEntityInstance* pEntity,
+                                                char iAttachmentPoint,
+                                                CUtlSymbolLarge iAttachmentName,
+                                                bool bResetAllParticlesOnEntity,
+                                                int nSplitScreenPlayerSlot,
+                                                IRecipientFilter* a7,
+                                                byte* a8);
+
+inline int (*DispatchParticleEffect2)(const char* pszParticleName,
+                                         Vector* vecOrigin,
+                                         QAngle* vecAngle,
+                                         CEntityInstance* entity,
+                                         bool bResetAllParticlesOnEntity,
+                                         int nSplitScreenPlayerSlot,
+                                         IRecipientFilter* filter);
+
 // Do it in here because i didn't found a good place to do this
 inline void (*CEntityInstance_AcceptInput)(CEntityInstance* pThis, const char* pInputName, CEntityInstance* pActivator, CEntityInstance* pCaller, variant_t* value, int nOutputID);
 

@@ -54,6 +54,8 @@ public class Mapping
                 return "void";
             case "uint64":
                 return "ulong";
+            case "byte":
+                return "byte";
             case "func":
             case "callback":
                 return "InputArgument";

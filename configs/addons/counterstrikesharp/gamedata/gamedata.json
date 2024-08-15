@@ -244,14 +244,14 @@
     "signatures": {
       "library": "server",
       "windows": "E8 ? ? ? ? 48 ? ? 48 ? ? E8 ? ? ? ? 45 ? ? C7 44 24",
-      "linux": "I dont care"
+      "linux": ""
     }
   },
   "CSoundOpGameSystem_SetSoundEventParam": {
     "signatures": {
       "library": "server",
       "windows": "48 89 5C 24 ? 48 89 6C 24 ? 56 57 41 ? 48 ? ? ? 41 ? ? ? 4C",
-      "linux": "I dont care"
+      "linux": ""
     }
   },
   "CNetworkGameServer_ClientList": {
@@ -264,14 +264,21 @@
     "signatures": {
       "library": "server",
       "windows": "48 89 5C 24 ? 56 57 41 ? 41 ? 41 ? 48 ? ? ? 81 79",
-      "linux": "I dont care"
+      "linux": ""
     }
   },
   "CItemGeneration_GenerateRandomItem": {
     "signatures": {
       "library": "server",
       "windows": "48 89 5C 24 ? 48 89 6C 24 ? 48 89 74 24 ? 48 89 7C 24 ? 41 ? 48 ? ? ? 48 ? ? ? ? ? ? 49 ? ? 49",
-      "linux": "I dont care"
+      "linux": ""
+    }
+  },
+  "DispatchParticleEffect": {
+    "signatures": {
+      "library": "server",
+      "windows": "E8 ? ? ? ? 4C ? ? 48 ? ? 49 ? ? E8 ? ? ? ? 48 ? ? 48 ? ? 75",
+      "linux": ""
     }
   }
 }

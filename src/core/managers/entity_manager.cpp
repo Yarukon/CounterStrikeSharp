@@ -107,6 +107,22 @@ void EntityManager::OnAllInitialized()
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'CItemGeneration_GenerateRandomItem\'");
     }
 
+    DispatchParticleEffect = (decltype(DispatchParticleEffect))(modules::server->FindSignature(
+        globals::gameConfig->GetSignature("DispatchParticleEffect")));
+
+    if (!DispatchParticleEffect)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'DispatchParticleEffect\'");
+    }
+
+    DispatchParticleEffect2 =
+        (decltype(DispatchParticleEffect2))(modules::server->FindSignature(globals::gameConfig->GetSignature("DispatchParticleEffect2")));
+
+    if (!DispatchParticleEffect2)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'DispatchParticleEffect2\'");
+    }
+
     // Listener is added in ServerStartup as entity system is not initialised at this stage.
 }
 

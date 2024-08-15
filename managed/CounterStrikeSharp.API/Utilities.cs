@@ -279,5 +279,10 @@ namespace CounterStrikeSharp.API
             else
                 NativeAPI.EmitSound(index, soundName, pitch, volume, false, 0);
         }
+
+        public static void DispatchParticle(nint entity, string particleName, CRecipientFilter filter, nint origin, nint angle)
+        {
+            NativeAPI.DispatchParticle2(entity, particleName, filter.GetRecipients(), origin, angle);
+        }
     }
 }

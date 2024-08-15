@@ -100,6 +100,7 @@ set(SOURCE_FILES
     src/core/soundeventparam.h
     src/core/serversideclient.h
     src/core/item_selection_criteria.h
+    src/core/global_types.h
 )
 
 # Sources

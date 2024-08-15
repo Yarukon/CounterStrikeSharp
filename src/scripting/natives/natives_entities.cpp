@@ -31,6 +31,8 @@
 
 #include "core/game_system.h"
 
+#include "core/global_types.h"
+
 namespace counterstrikesharp {
 
 CEntityInstance* GetEntityFromIndex(ScriptContext& script_context)
@@ -255,8 +257,7 @@ void EmitSound(ScriptContext& script_context)
     if (suppliedCustomFilter)
     {
         auto recipients = script_context.GetArgument<uint64>(5);
-        for (int i = 0; i < 64; ++i)
-            if (recipients & ((uint64)1 << i)) filter.AddRecipient(i);
+        filter.AddRecipientsByMasking(recipients);
     } else // else we add all the valid players into filter
         filter.AddAllPlayers();
 
@@ -275,28 +276,6 @@ void EmitSound(ScriptContext& script_context)
         CSSHARP_CORE_ERROR("Failed to SetSoundEventParam ({}, {}, {:.2f}) | GUID {} | HASH {:#x}", soundName, "volume", volume,
                            guid.m_nGuid, guid.m_hStackHash);
 }
-
-enum KeyValuesType_t : unsigned int
-{
-    TYPE_BOOL,
-    TYPE_INT,
-    TYPE_UINT,
-    TYPE_INT64,
-    TYPE_UINT64,
-    TYPE_FLOAT,
-    TYPE_DOUBLE,
-    TYPE_STRING,
-    TYPE_POINTER,
-    TYPE_STRING_TOKEN,
-    TYPE_EHANDLE,
-    TYPE_COLOR,
-    TYPE_VECTOR,
-    TYPE_VECTOR2D,
-    TYPE_VECTOR4D,
-    TYPE_QUATERNION,
-    TYPE_QANGLE,
-    TYPE_MATRIX3X4
-};
 
 #pragma pack(push)
 #pragma pack(1)
@@ -430,28 +409,6 @@ void DispatchSpawn(ScriptContext& script_context)
     CBaseEntity_DispatchSpawn(pEntity, pEntityKeyValues);
 }
 
-enum EEconItemQuality
-{
-    AE_UNDEFINED = -1,
-
-    AE_NORMAL = 0,
-    AE_GENUINE = 1,
-    AE_VINTAGE,
-    AE_UNUSUAL,
-    AE_UNIQUE,
-    AE_COMMUNITY,
-    AE_DEVELOPER,
-    AE_SELFMADE,
-    AE_CUSTOMIZED,
-    AE_STRANGE,
-    AE_COMPLETED,
-    AE_HAUNTED,
-    AE_TOURNAMENT,
-    AE_FAVORED,
-
-    AE_MAX_TYPES,
-};
-
 void* CreateWeaponEntity(ScriptContext& script_context)
 {
     if (!CItemSelectionCriteria_BAddCondition)
@@ -487,6 +444,48 @@ void* CreateWeaponEntity(ScriptContext& script_context)
     }
 
     return entity;
+}
+
+int DispatchParticle(ScriptContext& script_context)
+{
+    if (!DispatchParticleEffect)
+    {
+        script_context.ThrowNativeError("Failed to find signature for \'DispatchParticleEffect\'");
+        return 0;
+    }
+
+    CEntityInstance* entity = script_context.GetArgument<CEntityInstance*>(0);
+    const char* pszParticleName = script_context.GetArgument<const char*>(1);
+    uint64 filter = script_context.GetArgument<uint64>(2);
+    ParticleAttachment_t nAttachType = script_context.GetArgument<ParticleAttachment_t>(3);
+    uint8 iAttachmentPoint = script_context.GetArgument<uint8>(4);
+    const char* pszAttachmentName = script_context.GetArgument<const char*>(5);
+
+    CRecipientFilter _filter;
+    _filter.AddRecipientsByMasking(filter);
+    CUtlSymbolLarge attachmentName(pszAttachmentName);
+
+    return DispatchParticleEffect(pszParticleName, nAttachType, entity, iAttachmentPoint, attachmentName, false, 0, &_filter, 0);
+}
+
+int DispatchParticle2(ScriptContext& script_context)
+{
+    if (!DispatchParticleEffect2)
+    {
+        script_context.ThrowNativeError("Failed to find signature for \'DispatchParticleEffect2\'");
+        return 0;
+    }
+
+    CEntityInstance* entity = script_context.GetArgument<CEntityInstance*>(0);
+    const char* pszParticleName = script_context.GetArgument<const char*>(1);
+    uint64 filter = script_context.GetArgument<uint64>(2);
+    Vector* vec = script_context.GetArgument<Vector*>(3);
+    QAngle* ang = script_context.GetArgument<QAngle*>(4);
+
+    CRecipientFilter _filter;
+    _filter.AddRecipientsByMasking(filter);
+
+    return DispatchParticleEffect2(pszParticleName, vec, ang, entity, false, -1, &_filter);
 }
 
 void AcceptInput(ScriptContext& script_context)
@@ -548,5 +547,7 @@ REGISTER_NATIVES(entities, {
     ScriptEngine::RegisterNativeHandler("CREATE_WEAPON_ENTITY", CreateWeaponEntity);
     ScriptEngine::RegisterNativeHandler("ACCEPT_INPUT", AcceptInput);
     ScriptEngine::RegisterNativeHandler("ADD_ENTITY_IO_EVENT", AddEntityIOEvent);
+    ScriptEngine::RegisterNativeHandler("DISPATCH_PARTICLE", DispatchParticle);
+    ScriptEngine::RegisterNativeHandler("DISPATCH_PARTICLE2", DispatchParticle2);
 })
 } // namespace counterstrikesharp

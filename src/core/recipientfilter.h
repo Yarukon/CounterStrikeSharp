@@ -59,6 +59,11 @@ public:
         m_Recipients.AddToTail(slot);
     }
 
+    void AddRecipientsByMasking(uint64 recipients)
+    {
+        for (int i = 0; i < 64; ++i)
+            if (recipients & ((uint64)1 << i)) AddRecipient(i);
+    }
 private:
     NetChannelBufType_t m_NetworkBufType;
     bool m_bInitMessage;
