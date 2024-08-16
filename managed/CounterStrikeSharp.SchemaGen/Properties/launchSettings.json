@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CounterStrikeSharp.SchemaGen": {
+      "commandName": "Project",
+      "commandLineArgs": "F:/cs2_server/schema_gen"
+    }
+  }
+}
