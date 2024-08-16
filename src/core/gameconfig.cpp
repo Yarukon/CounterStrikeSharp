@@ -133,7 +133,8 @@ modules::CModule** CGameConfig::GetModule(const char* name)
     const char* library = this->GetLibrary(name);
     if (!library) return nullptr;
 
-    if (strcmp(library, "engine") == 0) return &modules::engine;
+    if (strcmp(library, "engine") == 0)
+        return &modules::engine;
     else if (strcmp(library, "server") == 0)
         return &modules::server;
     else if (strcmp(library, "vscript") == 0)

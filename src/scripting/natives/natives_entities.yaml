@@ -17,5 +17,6 @@ DISPATCH_SPAWN: entity:pointer, count:int, entries:pointer -> void
 CREATE_WEAPON_ENTITY: classname:string -> pointer
 DISPATCH_PARTICLE: entity:pointer, particleName:string, filter:uint64, attachmentType:uint, attatchmentPoint:byte, attachmentName:string -> int
 DISPATCH_PARTICLE2: entity:pointer, particleName:string, filter:uint64, origin:pointer, angle:pointer -> int
+QUERY_CONVAR_VALUE: slot:int, cvar:string, callback:pointer -> void
 ACCEPT_INPUT: pThis:pointer, inputName:string, activator:pointer, caller:pointer, value:string, outputID:int -> void
 ADD_ENTITY_IO_EVENT: pTarget:pointer, inputName:string, activator:pointer, caller:pointer, value:string, delay:float, outputID:int -> void

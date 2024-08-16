@@ -284,5 +284,43 @@ namespace CounterStrikeSharp.API
         {
             NativeAPI.DispatchParticle2(pEntity, particleName, filter.GetRecipients(), origin, angle);
         }
+
+
+        public enum CVAR_QUERY_STATUS
+        {
+            OK,
+            NOT_FOUND,
+            INVALID_CVAR,
+            CVAR_PROTECTED
+        }
+
+        public delegate void ConvarQueryCallback(PlayerControllerHandle controller, CVAR_QUERY_STATUS status, string cvar, string value);
+
+        [StructLayout(LayoutKind.Explicit, Size = 4)]
+        public readonly struct PlayerControllerHandle
+        {
+            [FieldOffset(0)]
+            private readonly int Slot;
+
+            public readonly CCSPlayerController? Get() => GetPlayerFromSlot(Slot);
+        }
+
+        /// <summary>
+        /// Query a player's convar value
+        /// </summary>
+        /// <param name="controller">Player controller</param>
+        /// <param name="convar">Target convar name</param>
+        /// <param name="callback">Query callback</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static void QueryClientConvarValue(CCSPlayerController? controller, string convar, ConvarQueryCallback callback)
+        {
+            if (controller == null || !controller.IsValid)
+                throw new ArgumentNullException(nameof(controller));
+
+            if (callback == null)
+                throw new ArgumentNullException(nameof(callback));
+
+            NativeAPI.QueryConvarValue(controller!.Slot, convar, Marshal.GetFunctionPointerForDelegate(callback));
+        }
     }
 }

@@ -1,6 +1,7 @@
 set(PROTO_TARGETS
 	${SOURCESDK_DIR}/common/network_connection.proto
 	${SOURCESDK_DIR}/common/networkbasetypes.proto
+    ${SOURCESDK_DIR}/common/netmessages.proto
 )
 
 if (UNIX)

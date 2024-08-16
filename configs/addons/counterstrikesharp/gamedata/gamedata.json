@@ -287,5 +287,11 @@
       "windows": "E8 ? ? ? ? 48 ? ? ? ? ? ? 8B ? ? 39 9F",
       "linux": ""
     }
+  },
+  "ProcessRespondCvarValue": {
+    "offsets": {
+      "windows": 39,
+      "linux": 41
+    }
   }
 }

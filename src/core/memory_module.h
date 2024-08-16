@@ -25,6 +25,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "log.h"
 
 #if __linux__
 #include <link.h>
@@ -46,8 +47,46 @@ struct Segments
     Segments& operator=(const Segments&) = default;
     Segments& operator=(Segments&&) = default;
 
+    std::string name;
+    size_t size;
     std::uintptr_t address{};
     std::vector<std::uint8_t> bytes{};
+};
+
+class SignatureIterator
+{
+  public:
+    SignatureIterator(std::uintptr_t pBase, size_t iSize, const byte* pSignature, size_t iSigLength)
+        : m_pBase((byte*)pBase), m_iSize(iSize), m_pSignature(pSignature), m_iSigLength(iSigLength)
+    {
+        m_pCurrent = m_pBase;
+    }
+
+    void* FindNext(bool allowWildcard)
+    {
+        for (size_t i = 0; i < m_iSize; i++)
+        {
+            size_t Matches = 0;
+            while (*(m_pCurrent + i + Matches) == m_pSignature[Matches] || (allowWildcard && m_pSignature[Matches] == '\x2A'))
+            {
+                Matches++;
+                if (Matches == m_iSigLength)
+                {
+                    m_pCurrent += i + 1;
+                    return m_pCurrent - 1;
+                }
+            }
+        }
+
+        return nullptr;
+    }
+
+  private:
+    byte* m_pBase;
+    size_t m_iSize;
+    const byte* m_pSignature;
+    size_t m_iSigLength;
+    byte* m_pCurrent;
 };
 
 class CModule
@@ -64,6 +103,8 @@ class CModule
     void* FindInterface(std::string_view name);
 
     void* FindSymbol(const std::string& name);
+
+    void* FindVirtualTable(const std::string& name);
 
     [[nodiscard]] bool IsInitialized() const { return m_bInitialized; }
 
@@ -86,6 +127,19 @@ class CModule
 #else
     void DumpSymbols(ElfW(Dyn) * dyn);
 #endif
+
+    Segments* GetSection(const std::string_view name)
+    {
+        for (auto& section : m_vecSegments)
+        {
+            if (section.name == name)
+            {
+                return &section;
+            }
+        }
+
+        return nullptr;
+    }
 
     std::optional<std::vector<std::uint8_t>> GetOriginalBytes(const std::vector<std::uint8_t>& disk_data, std::uintptr_t rva, std::size_t size);
 

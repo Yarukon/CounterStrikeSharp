@@ -25,11 +25,16 @@
 #include "scripting/callback_manager.h"
 #include "player_manager.h"
 
+#include "netmessages.pb.h"
+
 namespace counterstrikesharp {
 
 EntityManager::EntityManager() {}
 
 EntityManager::~EntityManager() {}
+
+SH_DECL_MANUALHOOK1(ProcessRespondCvarValue, 0, 0, 0, bool, const CNetMessagePB<CCLCMsg_RespondCvarValue>&);
+int g_iProcessRespondCvarValueId = -1;
 
 void EntityManager::OnAllInitialized()
 {
@@ -38,15 +43,7 @@ void EntityManager::OnAllInitialized()
     on_entity_deleted_callback = globals::callbackManager.CreateCallback("OnEntityDeleted");
     on_entity_parent_changed_callback = globals::callbackManager.CreateCallback("OnEntityParentChanged");
 
-    m_pFireOutputInternal = reinterpret_cast<FireOutputInternal>(modules::server->FindSignature(
-        globals::gameConfig->GetSignature("CEntityIOOutput_FireOutputInternal")));
-
-    if (m_pFireOutputInternal == nullptr)
-    {
-        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CEntityIOOutput_FireOutputInternal\'");
-        return;
-    }
-
+    // Functions
     CBaseEntity_DispatchSpawn = (decltype(CBaseEntity_DispatchSpawn))((modules::server->FindSignature(
             globals::gameConfig->GetSignature("CBaseEntity_DispatchSpawn"))));
 
@@ -65,15 +62,11 @@ void EntityManager::OnAllInitialized()
 
     CEntitySystem_AddEntityIOEvent = decltype(CEntitySystem_AddEntityIOEvent)(
         modules::server->FindSignature(globals::gameConfig->GetSignature("CEntitySystem_AddEntityIOEvent")));
-
+    
     if (!CEntitySystem_AddEntityIOEvent)
     {
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'CEntitySystem_AddEntityIOEvent\'");
     }
-
-    auto m_hook = funchook_create();
-    funchook_prepare(m_hook, (void**)&m_pFireOutputInternal, (void*)&DetourFireOutputInternal);
-    funchook_install(m_hook, 0);
 
     CSoundOpGameSystem_StartSoundEvent = (decltype(CSoundOpGameSystem_StartSoundEvent))(modules::server->FindSignature(
     globals::gameConfig->GetSignature("CSoundOpGameSystem_StartSoundEvent")));
@@ -123,6 +116,36 @@ void EntityManager::OnAllInitialized()
         CSSHARP_CORE_CRITICAL("Failed to find signature for \'DispatchParticleEffect2\'");
     }
 
+    // Hooks
+    m_pFireOutputInternal = reinterpret_cast<FireOutputInternal>(
+        modules::server->FindSignature(globals::gameConfig->GetSignature("CEntityIOOutput_FireOutputInternal")));
+
+    if (m_pFireOutputInternal == nullptr)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find signature for \'CEntityIOOutput_FireOutputInternal\'");
+        return;
+    }
+
+    auto m_hook = funchook_create();
+    funchook_prepare(m_hook, (void**)&m_pFireOutputInternal, (void*)&DetourFireOutputInternal);
+    funchook_install(m_hook, 0);
+
+    int offset = globals::gameConfig->GetOffset("ProcessRespondCvarValue");
+    if (offset == -1)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find offset for \'ProcessRespondCvarValue\'");
+        return;
+    }
+    SH_MANUALHOOK_RECONFIGURE(ProcessRespondCvarValue, offset, 0, 0);
+
+    const auto pCServerSideClientVFTbl = modules::engine->FindVirtualTable("CServerSideClient");
+    if (offset == -1)
+    {
+        CSSHARP_CORE_CRITICAL("Failed to find vftable for \'CServerSideClient\'");
+        return;
+    }
+    g_iProcessRespondCvarValueId = SH_ADD_MANUALDVPHOOK(ProcessRespondCvarValue, pCServerSideClientVFTbl,
+                                                        SH_MEMBER(this, &EntityManager::DetourProcessRespondCvarValue), true);
     // Listener is added in ServerStartup as entity system is not initialised at this stage.
 }
 
@@ -134,6 +157,8 @@ void EntityManager::OnShutdown()
     globals::callbackManager.ReleaseCallback(on_entity_parent_changed_callback);
 
     globals::entitySystem->RemoveListenerEntity(&entityListener);
+
+    SH_REMOVE_HOOK_ID(g_iProcessRespondCvarValueId);
 }
 
 void CEntityListener::OnEntitySpawned(CEntityInstance* pEntity)
@@ -146,6 +171,7 @@ void CEntityListener::OnEntitySpawned(CEntityInstance* pEntity)
         callback->Execute();
     }
 }
+
 void CEntityListener::OnEntityCreated(CEntityInstance* pEntity)
 {
     auto callback = globals::entityManager.on_entity_created_callback;
@@ -156,6 +182,7 @@ void CEntityListener::OnEntityCreated(CEntityInstance* pEntity)
         callback->Execute();
     }
 }
+
 void CEntityListener::OnEntityDeleted(CEntityInstance* pEntity)
 {
     auto callback = globals::entityManager.on_entity_deleted_callback;
@@ -166,6 +193,7 @@ void CEntityListener::OnEntityDeleted(CEntityInstance* pEntity)
         callback->Execute();
     }
 }
+
 void CEntityListener::OnEntityParentChanged(CEntityInstance* pEntity, CEntityInstance* pNewParent)
 {
     auto callback = globals::entityManager.on_entity_parent_changed_callback;
@@ -212,6 +240,25 @@ void EntityManager::UnhookEntityOutput(const char* szClassname, const char* szOu
             m_pHookMap.erase(outputKey);
         }
     }
+}
+
+typedef void (*CvarQueryCallback)(int slot, int result, const char* cvar, const char* value);
+
+bool EntityManager::DetourProcessRespondCvarValue(const CNetMessagePB<CCLCMsg_RespondCvarValue>& msg)
+{
+    CServerSideClient* client = META_IFACEPTR(CServerSideClient);
+
+    int cookie = msg.cookie();
+
+    auto list = globals::entityManager.m_CvarQueryLists;
+    auto it = list.find(cookie);
+    if (it != list.end())
+    {
+        reinterpret_cast<CvarQueryCallback>(it->second)(client->GetPlayerSlot().Get(), msg.status_code(), msg.name().c_str(), msg.value().c_str());
+        list.erase(it);
+    }
+
+    RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
 void DetourFireOutputInternal(CEntityIOOutput* const pThis, CEntityInstance* pActivator,

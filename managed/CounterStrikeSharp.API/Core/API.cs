@@ -805,6 +805,18 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
+        public static void QueryConvarValue(int slot, string cvar, IntPtr callback){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(slot);
+			ScriptContext.GlobalScriptContext.Push(cvar);
+			ScriptContext.GlobalScriptContext.Push(callback);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x42E81F43);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			}
+		}
+
         public static void AcceptInput(IntPtr pthis, string inputname, IntPtr activator, IntPtr caller, string value, int outputid){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();

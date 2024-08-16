@@ -154,10 +154,9 @@ CModule::CModule(std::string_view path, std::uint64_t base)
 
     for (auto i = 0; i < nt_header->FileHeader.NumberOfSections; i++, section++)
     {
-        const auto is_executable = (section->Characteristics & IMAGE_SCN_MEM_EXECUTE) != 0;
         const auto is_readable = (section->Characteristics & IMAGE_SCN_MEM_READ) != 0;
 
-        if (is_executable && is_readable)
+        if (is_readable)
         {
             const auto start = this->m_baseAddress + section->VirtualAddress;
             const auto size = (std::min)(section->SizeOfRawData, section->Misc.VirtualSize);
@@ -165,6 +164,8 @@ CModule::CModule(std::string_view path, std::uint64_t base)
 
             auto& segment = m_vecSegments.emplace_back();
 
+            segment.name = std::string(reinterpret_cast<const char*>(section->Name), strnlen(reinterpret_cast<const char*>(section->Name), 8));
+            segment.size = size;
             segment.address = start;
             segment.bytes.reserve(size);
 
@@ -228,17 +229,17 @@ CModule::CModule(std::string_view path, dl_phdr_info* info)
         if (type != PT_LOAD) continue;
 
         auto flags = info->dlpi_phdr[i].p_flags;
-
-        auto is_executable = (flags & PF_X) != 0;
         auto is_readable = (flags & PF_R) != 0;
 
-        if (!is_executable || !is_readable) continue;
+        if (!is_readable) continue;
 
         auto size = info->dlpi_phdr[i].p_filesz;
         auto* data = reinterpret_cast<std::uint8_t*>(address);
 
         auto& segment = m_vecSegments.emplace_back();
 
+        segment.name = "<unknown>";
+        segment.size = size;
         segment.address = address;
         segment.bytes.reserve(size);
 
@@ -576,4 +577,70 @@ void* CModule::FindSymbol(const std::string& name)
     CSSHARP_CORE_ERROR("Cannot find symbol {}", name);
     return nullptr;
 }
+
+#ifdef _WIN32
+void* CModule::FindVirtualTable(const std::string& name)
+{
+    auto runTimeData = GetSection(".data");
+    auto readOnlyData = GetSection(".rdata");
+
+    if (!runTimeData || !readOnlyData)
+    {
+        CSSHARP_CORE_WARN("Failed to find .data or .rdata section");
+        return nullptr;
+    }
+
+    std::string decoratedTableName = ".?AV" + name + "@@";
+
+    SignatureIterator sigIt(runTimeData->address, runTimeData->size, (const byte*)decoratedTableName.c_str(),
+                            decoratedTableName.size() + 1);
+    void* typeDescriptor = sigIt.FindNext(false);
+
+    if (!typeDescriptor)
+    {
+        CSSHARP_CORE_WARN("Failed to find type descriptor for {}", name.c_str());
+        return nullptr;
+    }
+
+    typeDescriptor = (void*)((uintptr_t)typeDescriptor - 0x10);
+
+    const uint32_t rttiTDRva = (uintptr_t)typeDescriptor - (uintptr_t)m_base;
+
+    CSSHARP_CORE_INFO("RTTI Type Descriptor RVA: 0x{:X}", rttiTDRva);
+
+    SignatureIterator sigIt2(readOnlyData->address, readOnlyData->size, (const byte*)&rttiTDRva, sizeof(uint32_t));
+
+    while (void* completeObjectLocator = sigIt2.FindNext(false))
+    {
+        auto completeObjectLocatorHeader = (uintptr_t)completeObjectLocator - 0xC;
+        // check RTTI Complete Object Locator header, always 0x1
+        if (*(int32_t*)(completeObjectLocatorHeader) != 1) continue;
+
+        // check RTTI Complete Object Locator vtable offset
+        if (*(int32_t*)((uintptr_t)completeObjectLocator - 0x8) != 0) continue;
+
+        SignatureIterator sigIt3(readOnlyData->address, readOnlyData->size, (const byte*)&completeObjectLocatorHeader, sizeof(void*));
+        void* vtable = sigIt3.FindNext(false);
+
+        if (!vtable)
+        {
+            CSSHARP_CORE_WARN("Failed to find vtable for {}", name.c_str());
+            return nullptr;
+        }
+
+        return (void*)((uintptr_t)vtable + 0x8);
+    }
+
+    CSSHARP_CORE_WARN("Failed to find RTTI Complete Object Locator for {}", name.c_str());
+    return nullptr;
+}
+#else
+void* CModule::FindVirtualTable(const std::string& name)
+{
+    // I dont care about linux anymore >:(
+    CSSHARP_CORE_WARN("Failed to find vtable for {}", name.c_str());
+    return nullptr;
+}
+#endif
+
 } // namespace counterstrikesharp::modules

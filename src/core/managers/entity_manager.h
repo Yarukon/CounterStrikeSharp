@@ -33,6 +33,8 @@
 
 #include "core/item_selection_criteria.h"
 
+#include "netmessages.pb.h"
+
 namespace counterstrikesharp {
 class ScriptCallback;
 
@@ -54,9 +56,13 @@ public:
     void OnShutdown() override;
     void HookEntityOutput(const char* szClassname, const char* szOutput, CallbackT fnCallback, HookMode mode);
     void UnhookEntityOutput(const char* szClassname, const char* szOutput, CallbackT fnCallback, HookMode mode);
+
+    bool DetourProcessRespondCvarValue(const CNetMessagePB<CCLCMsg_RespondCvarValue>& msg);
+
     CEntityListener entityListener;
     std::map<OutputKey_t, CallbackPair*> m_pHookMap;
-private:
+    std::unordered_map<int, void*> m_CvarQueryLists;
+  private:
     ScriptCallback *on_entity_spawned_callback;
     ScriptCallback *on_entity_created_callback;
     ScriptCallback *on_entity_deleted_callback;

@@ -33,6 +33,8 @@
 
 #include "core/global_types.h"
 
+#include "netmessages.pb.h"
+
 namespace counterstrikesharp {
 
 CEntityInstance* GetEntityFromIndex(ScriptContext& script_context)
@@ -488,6 +490,43 @@ int DispatchParticle2(ScriptContext& script_context)
     return DispatchParticleEffect2(pszParticleName, vec, ang, entity, false, -1, &_filter, 0);
 }
 
+void QueryConvarValue(ScriptContext& script_context)
+{
+    int slot = script_context.GetArgument<int>(0);
+    if (slot < 0 || slot > 63)
+    {
+        script_context.ThrowNativeError("Invalid player slot {}", slot);
+        return;
+    }
+
+    const char* cvar = script_context.GetArgument<const char*>(1);
+    auto callback = script_context.GetArgument<void*>(2);
+
+    CServerSideClient* client = globals::GetClientBySlot(slot);
+
+    if (!client)
+    {
+        script_context.ThrowNativeError("Couldn't get player from slot {}", slot);
+        return;
+    }
+
+    static INetworkMessageInternal* pMsg = globals::networkMessages->FindNetworkMessagePartial("CSVCMsg_GetCvarValue");
+
+    static int iQueryCvarCookieCounter = 0;
+    int iQueryCvarCookie = ++iQueryCvarCookieCounter;
+
+    // Add callback
+    globals::entityManager.m_CvarQueryLists[iQueryCvarCookie] = callback;
+
+    CNetMessagePB<CSVCMsg_GetCvarValue>* msg = pMsg->AllocateMessage()->ToPB<CSVCMsg_GetCvarValue>();
+    msg->set_cookie(iQueryCvarCookie);
+    msg->set_cvar_name(cvar);
+
+    client->GetNetChannel()->SendNetMessage(msg, BUF_RELIABLE);
+
+    delete msg;
+}
+
 void AcceptInput(ScriptContext& script_context)
 {
     if (!CEntityInstance_AcceptInput)
@@ -547,6 +586,7 @@ REGISTER_NATIVES(entities, {
     ScriptEngine::RegisterNativeHandler("CREATE_WEAPON_ENTITY", CreateWeaponEntity);
     ScriptEngine::RegisterNativeHandler("ACCEPT_INPUT", AcceptInput);
     ScriptEngine::RegisterNativeHandler("ADD_ENTITY_IO_EVENT", AddEntityIOEvent);
+    ScriptEngine::RegisterNativeHandler("QUERY_CONVAR_VALUE", QueryConvarValue);
     ScriptEngine::RegisterNativeHandler("DISPATCH_PARTICLE", DispatchParticle);
     ScriptEngine::RegisterNativeHandler("DISPATCH_PARTICLE2", DispatchParticle2);
 })
