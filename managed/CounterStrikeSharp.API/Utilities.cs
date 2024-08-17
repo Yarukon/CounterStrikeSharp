@@ -311,11 +311,15 @@ namespace CounterStrikeSharp.API
         /// <param name="controller">Player controller</param>
         /// <param name="convar">Target convar name</param>
         /// <param name="callback">Query callback</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException">Invalid controller / Invalid callback</exception>
+        /// <exception cref="ArgumentException">controller is a bot</exception>
         public static void QueryClientConvarValue(CCSPlayerController? controller, string convar, ConvarQueryCallback callback)
         {
             if (controller == null || !controller.IsValid)
                 throw new ArgumentNullException(nameof(controller));
+
+            if (controller.IsBot)
+                throw new ArgumentException("Controller can't be a bot.");
 
             if (callback == null)
                 throw new ArgumentNullException(nameof(callback));
