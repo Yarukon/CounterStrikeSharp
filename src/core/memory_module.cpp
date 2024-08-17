@@ -217,7 +217,7 @@ CModule::CModule(std::string_view path, dl_phdr_info* info)
 
     for (auto i = 0; i < info->dlpi_phnum; i++)
     {
-        auto address = m_baseAddress + info->dlpi_phdr[i].p_paddr;
+        auto address = m_baseAddress + info->dlpi_phdr[i].p_vaddr;
         auto type = info->dlpi_phdr[i].p_type;
         auto is_dynamic_section = type == PT_DYNAMIC;
         if (is_dynamic_section)
@@ -637,7 +637,51 @@ void* CModule::FindVirtualTable(const std::string& name)
 #else
 void* CModule::FindVirtualTable(const std::string& name)
 {
-    // I dont care about linux anymore >:(
+    auto readOnlyData = GetSection(".rodata");
+    auto readOnlyRelocations = GetSection(".data.rel.ro");
+
+    if (!readOnlyData || !readOnlyRelocations)
+    {
+        CSSHARP_CORE_WARN("Failed to find .rodata or .data.rel.ro section");
+        return nullptr;
+    }
+
+    std::string decoratedTableName = std::to_string(name.length()) + name;
+
+    SignatureIterator sigIt(readOnlyData->address, readOnlyData->size, (const byte*)decoratedTableName.c_str(),
+                            decoratedTableName.size() + 1);
+    void* classNameString = sigIt.FindNext(false);
+
+    if (!classNameString)
+    {
+        CSSHARP_CORE_WARN("Failed to find type descriptor for {}", name.c_str());
+        return nullptr;
+    }
+
+    SignatureIterator sigIt2(readOnlyRelocations->address, readOnlyRelocations->size, (const byte*)&classNameString, sizeof(void*));
+    void* typeName = sigIt2.FindNext(false);
+
+    if (!typeName)
+    {
+        CSSHARP_CORE_WARN("Failed to find type name for {}", name.c_str());
+        return nullptr;
+    }
+
+    void* typeInfo = (void*)((uintptr_t)typeName - 0x8);
+
+    for (const auto& sectionName : { std::string_view(".data.rel.ro"), std::string_view(".data.rel.ro.local") })
+    {
+        auto section = GetSection(sectionName);
+        if (!section) continue;
+
+        SignatureIterator sigIt3(section->address, section->size, (const byte*)&typeInfo, sizeof(void*));
+
+        while (void* vtable = sigIt3.FindNext(false))
+        {
+            if (*(int64_t*)((uintptr_t)vtable - 0x8) == 0) return (void*)((uintptr_t)vtable + 0x8);
+        }
+    }
+
     CSSHARP_CORE_WARN("Failed to find vtable for {}", name.c_str());
     return nullptr;
 }

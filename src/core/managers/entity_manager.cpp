@@ -139,7 +139,7 @@ void EntityManager::OnAllInitialized()
     SH_MANUALHOOK_RECONFIGURE(ProcessRespondCvarValue, offset, 0, 0);
 
     const auto pCServerSideClientVFTbl = modules::engine->FindVirtualTable("CServerSideClient");
-    if (offset == -1)
+    if (!pCServerSideClientVFTbl)
     {
         CSSHARP_CORE_CRITICAL("Failed to find vftable for \'CServerSideClient\'");
         return;

@@ -25,7 +25,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "log.h"
 
 #if __linux__
 #include <link.h>
