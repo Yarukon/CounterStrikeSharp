@@ -321,8 +321,8 @@ namespace CounterStrikeSharp.API
             if (controller.IsBot)
                 throw new ArgumentException("Controller can't be a bot.");
 
-            if (callback == null)
-                throw new ArgumentNullException(nameof(callback));
+            ArgumentException.ThrowIfNullOrWhiteSpace(nameof(convar));
+            ArgumentException.ThrowIfNullOrEmpty(nameof(callback));
 
             NativeAPI.QueryConvarValue(controller!.Slot, convar, Marshal.GetFunctionPointerForDelegate(callback));
         }
