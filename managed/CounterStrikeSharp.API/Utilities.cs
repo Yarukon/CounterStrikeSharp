@@ -286,15 +286,15 @@ namespace CounterStrikeSharp.API
         }
 
 
-        public enum CVAR_QUERY_STATUS
+        public enum CvarQueryStatus
         {
             OK,
             NOT_FOUND,
-            INVALID_CVAR,
+            NOT_CVAR,
             CVAR_PROTECTED
         }
 
-        public delegate void ConvarQueryCallback(PlayerControllerHandle controller, CVAR_QUERY_STATUS status, string cvar, string value);
+        public delegate void ConvarQueryCallback(PlayerControllerHandle controller, CvarQueryStatus status, string cvar, string value);
 
         [StructLayout(LayoutKind.Explicit, Size = 4)]
         public readonly struct PlayerControllerHandle
