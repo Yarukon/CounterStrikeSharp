@@ -16,6 +16,10 @@
 #else
 #include <elf.h>
 #include <link.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 #endif
 
 #include "core/gameconfig.h"
@@ -75,7 +79,7 @@ void Initialize()
         bool isFromGameBin = name.find(GAMEBIN) != std::string::npos;
         if (!isFromGameBin && !isFromRootBin) return 0;
 
-        auto mod = std::make_unique<CModule>(name, info);
+        auto mod = std::make_unique<CModule>(name);
         if (!mod->IsInitialized()) return 0;
 
         moduleList.emplace_back(std::move(mod));
@@ -192,71 +196,72 @@ CModule::CModule(std::string_view path, std::uint64_t base)
     m_bInitialized = true;
 }
 #else
-CModule::CModule(std::string_view path, dl_phdr_info* info)
+CModule::CModule(std::string_view path)
 {
     m_pszModule = path.substr(path.find_last_of('/') + 1);
     m_pszPath = path.data();
-    m_baseAddress = info->dlpi_addr;
 
-    const bool should_read_from_disk = std::any_of(modules_to_read_from_disk.begin(), modules_to_read_from_disk.end(), [&](const auto& i) {
-        return m_pszModule == i;
-    });
-
-    std::vector<std::uint8_t> disk_data{};
-    if (should_read_from_disk)
+    void* handle = dlopen(path.data(), RTLD_LAZY | RTLD_NOLOAD);
+    if (!handle)
     {
-        std::ifstream stream(m_pszPath, std::ios::in | std::ios::binary);
-        if (!stream.good())
-        {
-            CSSHARP_CORE_ERROR("Cannot open file {}", m_pszPath);
-            return;
-        }
-        disk_data.reserve(std::filesystem::file_size(m_pszPath));
-        disk_data.assign((std::istreambuf_iterator(stream)), std::istreambuf_iterator<char>());
+        CSSHARP_CORE_ERROR("Failed to load file {}", path);
+        return;
     }
 
-    for (auto i = 0; i < info->dlpi_phnum; i++)
+    link_map* lmap;
+    if (dlinfo(handle, RTLD_DI_LINKMAP, &lmap) != 0)
     {
-        auto address = m_baseAddress + info->dlpi_phdr[i].p_vaddr;
-        auto type = info->dlpi_phdr[i].p_type;
-        auto is_dynamic_section = type == PT_DYNAMIC;
-        if (is_dynamic_section)
+        dlclose(handle);
+        CSSHARP_CORE_ERROR("Failed to link_map file {}", path);
+        return;
+    }
+
+    int fd = open(lmap->l_name, O_RDONLY);
+    if (fd == -1)
+    {
+        dlclose(handle);
+        CSSHARP_CORE_ERROR("Failed to open file {}", path);
+        return;
+    }
+
+    struct stat st;
+    if (fstat(fd, &st) == 0)
+    {
+        void* map = mmap(nullptr, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (map != MAP_FAILED)
         {
-            DumpSymbols(reinterpret_cast<ElfW(Dyn)*>(address));
-            continue;
-        }
+            m_baseAddress = lmap->l_addr;
 
-        if (type != PT_LOAD) continue;
+            ElfW(Ehdr)* ehdr = static_cast<ElfW(Ehdr)*>(map);
+            ElfW(Shdr)* shdrs = reinterpret_cast<ElfW(Shdr)*>(reinterpret_cast<uintptr_t>(ehdr) + ehdr->e_shoff);
+            const char* strTab = reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(ehdr) + shdrs[ehdr->e_shstrndx].sh_offset);
 
-        auto flags = info->dlpi_phdr[i].p_flags;
-        auto is_readable = (flags & PF_R) != 0;
-
-        if (!is_readable) continue;
-
-        auto size = info->dlpi_phdr[i].p_filesz;
-        auto* data = reinterpret_cast<std::uint8_t*>(address);
-
-        auto& segment = m_vecSegments.emplace_back();
-
-        segment.name = "<unknown>";
-        segment.size = size;
-        segment.address = address;
-        segment.bytes.reserve(size);
-
-        if (should_read_from_disk)
-        {
-            if (auto bytes = GetOriginalBytes(disk_data, address - m_baseAddress, size))
+            for (auto i = 0; i < ehdr->e_shnum; ++i) // Loop through the sections.
             {
-                CSSHARP_CORE_INFO("Copying bytes from disk for {}", m_pszPath);
-                segment.bytes = bytes.value();
-                continue;
-            }
-            CSSHARP_CORE_ERROR("Cannot get original bytes for {}", m_pszPath);
-            return;
-        }
+                ElfW(Shdr)* shdr = reinterpret_cast<ElfW(Shdr)*>(reinterpret_cast<uintptr_t>(shdrs) + i * ehdr->e_shentsize);
 
-        segment.bytes.assign(&data[0], &data[size]);
+                if (*(strTab + shdr->sh_name) == '\0') continue;
+
+                if (strcmp((strTab + shdr->sh_name), ".dynamic") == 0)
+                {
+                    DumpSymbols(reinterpret_cast<ElfW(Dyn)*>(static_cast<uintptr_t>(lmap->l_addr + shdr->sh_addr)));
+                    continue;
+                }
+
+                auto& segment = m_vecSegments.emplace_back();
+
+                segment.name = strTab + shdr->sh_name;
+                segment.address = m_baseAddress + shdr->sh_addr;
+                segment.size = shdr->sh_size;
+                segment.bytes.reserve(shdr->sh_size);
+                segment.bytes.assign(reinterpret_cast<std::uint8_t*>(segment.address), reinterpret_cast<std::uint8_t*>(segment.address + segment.size));
+            }
+
+            munmap(map, st.st_size);
+        }
     }
+
+    close(fd);
 
     if (m_fnCreateInterface == nullptr) return;
 

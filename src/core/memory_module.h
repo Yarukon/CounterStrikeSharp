@@ -94,7 +94,7 @@ class CModule
 #ifdef _WIN32
     CModule(std::string_view path, std::uint64_t base);
 #else
-    CModule(std::string_view path, struct dl_phdr_info* info);
+    CModule(std::string_view path);
 #endif
 
     void* FindSignature(const char* signature);
