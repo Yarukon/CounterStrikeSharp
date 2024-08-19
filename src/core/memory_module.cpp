@@ -196,6 +196,7 @@ CModule::CModule(std::string_view path, std::uint64_t base)
     m_bInitialized = true;
 }
 #else
+// From DynlibUtils, thx m8
 CModule::CModule(std::string_view path)
 {
     m_pszModule = path.substr(path.find_last_of('/') + 1);
@@ -583,6 +584,7 @@ void* CModule::FindSymbol(const std::string& name)
     return nullptr;
 }
 
+// From cs2fixes
 #ifdef _WIN32
 void* CModule::FindVirtualTable(const std::string& name)
 {
