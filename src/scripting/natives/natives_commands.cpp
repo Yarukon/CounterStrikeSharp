@@ -152,23 +152,6 @@ static void IssueClientCommandFromServer(ScriptContext& script_context)
     globals::cvars->DispatchConCommand(handle, context, args);
 }
 
-static const char* GetClientConVarValue(ScriptContext& script_context)
-{
-    auto playerSlot = script_context.GetArgument<int>(0);
-    auto convarName = script_context.GetArgument<const char*>(1);
-
-    return globals::engine->GetClientConVarValue(CPlayerSlot(playerSlot), convarName);
-}
-
-static void SetFakeClientConVarValue(ScriptContext& script_context)
-{
-    auto playerSlot = script_context.GetArgument<int>(0);
-    auto convarName = script_context.GetArgument<const char*>(1);
-    auto convarValue = script_context.GetArgument<const char*>(2);
-
-    globals::engine->SetFakeClientConVarValue(CPlayerSlot(playerSlot), convarName, convarValue);
-}
-
 ConVar* FindConVar(ScriptContext& script_context)
 {
     auto name = script_context.GetArgument<const char*>(0);
@@ -191,6 +174,46 @@ void SetConVarStringValue(ScriptContext& script_context)
     }
 
     pCvar->values = reinterpret_cast<CVValue_t**>((char*)value);
+}
+
+ConVar* GetConVarFromHandle(ScriptContext& script_context)
+{
+    ConVarHandle hCvarHandle = script_context.GetArgument<ConVarHandle>(0);
+    if (!hCvarHandle.IsValid())
+    {
+        return nullptr;
+    }
+
+    return globals::cvars->GetConVar(hCvarHandle);
+}
+
+uint32 GetFirstConVar(ScriptContext& script_context)
+{
+    ConVarHandle hCvarHandle = globals::cvars->FindFirstConVar();
+
+    if (hCvarHandle.IsValid())
+    {
+        return hCvarHandle.Get();
+    }
+
+    return -1;
+}
+
+uint32 GetNextConVar(ScriptContext& script_context)
+{
+    ConVarHandle prevCvar = script_context.GetArgument<ConVarHandle>(0);
+    if (!prevCvar.IsValid())
+    {
+        return -1;
+    }
+
+    auto hCvarHandle = globals::cvars->FindNextConVar(prevCvar);
+    if (hCvarHandle.IsValid())
+    {
+        return hCvarHandle.Get();
+    }
+
+    return -1;
 }
 
 void ReplicateToClient(ScriptContext& scriptContext)
@@ -243,12 +266,12 @@ REGISTER_NATIVES(commands, {
 
     ScriptEngine::RegisterNativeHandler("FIND_CONVAR", FindConVar);
     ScriptEngine::RegisterNativeHandler("SET_CONVAR_STRING_VALUE", SetConVarStringValue);
+    ScriptEngine::RegisterNativeHandler("GET_CONVAR_FROM_HANDLE", GetConVarFromHandle);
+    ScriptEngine::RegisterNativeHandler("GET_FIRST_CONVAR", GetFirstConVar);
+    ScriptEngine::RegisterNativeHandler("GET_NEXT_CONVAR", GetNextConVar);
 
     ScriptEngine::RegisterNativeHandler("ISSUE_CLIENT_COMMAND", IssueClientCommand);
-    ScriptEngine::RegisterNativeHandler("ISSUE_CLIENT_COMMAND_FROM_SERVER",
-                                        IssueClientCommandFromServer);
-    ScriptEngine::RegisterNativeHandler("GET_CLIENT_CONVAR_VALUE", GetClientConVarValue);
-    ScriptEngine::RegisterNativeHandler("SET_FAKE_CLIENT_CONVAR_VALUE", SetFakeClientConVarValue);
+    ScriptEngine::RegisterNativeHandler("ISSUE_CLIENT_COMMAND_FROM_SERVER", IssueClientCommandFromServer);
     ScriptEngine::RegisterNativeHandler("REPLICATE_TO_CLIENT", ReplicateToClient);
 })
 } // namespace counterstrikesharp

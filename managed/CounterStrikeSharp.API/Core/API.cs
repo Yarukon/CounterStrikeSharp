@@ -180,27 +180,35 @@ namespace CounterStrikeSharp.API.Core
 			}
 		}
 
-        public static string GetClientConvarValue(int clientindex, string convarname){
+        public static IntPtr GetConvarFromHandle(uint handle){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
-			ScriptContext.GlobalScriptContext.Push(clientindex);
-			ScriptContext.GlobalScriptContext.Push(convarname);
-			ScriptContext.GlobalScriptContext.SetIdentifier(0xAE4B1B79);
+			ScriptContext.GlobalScriptContext.Push(handle);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x2DE5D1B7);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
-			return (string)ScriptContext.GlobalScriptContext.GetResult(typeof(string));
+			return (IntPtr)ScriptContext.GlobalScriptContext.GetResult(typeof(IntPtr));
 			}
 		}
 
-        public static void SetFakeClientConvarValue(int clientindex, string convarname, string convarvalue){
+        public static uint GetFirstConvar(){
 			lock (ScriptContext.GlobalScriptContext.Lock) {
 			ScriptContext.GlobalScriptContext.Reset();
-			ScriptContext.GlobalScriptContext.Push(clientindex);
-			ScriptContext.GlobalScriptContext.Push(convarname);
-			ScriptContext.GlobalScriptContext.Push(convarvalue);
-			ScriptContext.GlobalScriptContext.SetIdentifier(0x4C61E8BB);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0x21C5766E);
 			ScriptContext.GlobalScriptContext.Invoke();
 			ScriptContext.GlobalScriptContext.CheckErrors();
+			return (uint)ScriptContext.GlobalScriptContext.GetResult(typeof(uint));
+			}
+		}
+
+        public static uint GetNextConvar(uint prevcvarhandle){
+			lock (ScriptContext.GlobalScriptContext.Lock) {
+			ScriptContext.GlobalScriptContext.Reset();
+			ScriptContext.GlobalScriptContext.Push(prevcvarhandle);
+			ScriptContext.GlobalScriptContext.SetIdentifier(0xA6C82C13);
+			ScriptContext.GlobalScriptContext.Invoke();
+			ScriptContext.GlobalScriptContext.CheckErrors();
+			return (uint)ScriptContext.GlobalScriptContext.GetResult(typeof(uint));
 			}
 		}
 

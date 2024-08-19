@@ -27,40 +27,28 @@
 
 #include <stack>
 #include <unordered_map>
-#include <vector>
-#include <mutex>
 
 #include "core/log.h"
 #include "core/utils.h"
 
 static std::unordered_map<uint64_t, counterstrikesharp::TNativeHandler> g_registeredHandlers;
-static thread_local std::stack<std::string> errors;
 
 namespace counterstrikesharp {
+
+std::stack<std::string> errors;
 
 void ScriptContext::ThrowNativeError(const char* msg, ...)
 {
     va_list arglist;
+    char dest[256];
     va_start(arglist, msg);
-
-    int size = vsnprintf(nullptr, 0, msg, arglist);
+    vsprintf(dest, msg, arglist);
     va_end(arglist);
+    char buff[256];
+    snprintf(buff, sizeof(buff), dest, arglist);
 
-    if (size < 0)
-    {
-        errors.push("Formatting error in ThrowNativeError");
-        this->SetResult(errors.top().c_str());
-        *this->m_has_error = 1;
-        return;
-    }
-
-    std::vector<char> error_string(size + 1);
-
-    va_start(arglist, msg);
-    vsnprintf(error_string.data(), size + 1, msg, arglist);
-    va_end(arglist);
-
-    errors.push(std::string(error_string.data()));
+    auto error_string = std::string(buff);
+    errors.push(error_string);
 
     const char* ptr = errors.top().c_str();
     this->SetResult(ptr);
@@ -69,7 +57,7 @@ void ScriptContext::ThrowNativeError(const char* msg, ...)
 
 void ScriptContext::Reset()
 {
-    if (*m_has_error && !errors.empty())
+    if (*m_has_error)
     {
         errors.pop();
     }
@@ -84,13 +72,14 @@ void ScriptContext::Reset()
 
 tl::optional<TNativeHandler> ScriptEngine::GetNativeHandler(uint64_t nativeIdentifier)
 {
-    static thread_local std::unordered_map<uint64_t, TNativeHandler>::iterator lastIt = g_registeredHandlers.end();
+    static std::unordered_map<uint64_t, TNativeHandler>::iterator lastIt = g_registeredHandlers.end();
     if (lastIt != g_registeredHandlers.end() && lastIt->first == nativeIdentifier)
     {
         return lastIt->second;
     }
 
     auto it = g_registeredHandlers.find(nativeIdentifier);
+
     if (it != g_registeredHandlers.end())
     {
         lastIt = it;

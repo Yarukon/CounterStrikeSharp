@@ -11,6 +11,7 @@ ISSUE_CLIENT_COMMAND: slot:int,command:string -> void
 ISSUE_CLIENT_COMMAND_FROM_SERVER: slot:int,command:string -> void
 FIND_CONVAR: name:string -> pointer
 SET_CONVAR_STRING_VALUE: convar:pointer,value:string -> void
-GET_CLIENT_CONVAR_VALUE: clientIndex:int,convarName:string -> string
-SET_FAKE_CLIENT_CONVAR_VALUE: clientIndex:int,convarName:string,convarValue:string -> void
+GET_CONVAR_FROM_HANDLE: handle:uint -> pointer
+GET_FIRST_CONVAR: -> uint
+GET_NEXT_CONVAR: prevCvarHandle:uint -> uint
 REPLICATE_TO_CLIENT: slot:int, convar:string, value:string -> void

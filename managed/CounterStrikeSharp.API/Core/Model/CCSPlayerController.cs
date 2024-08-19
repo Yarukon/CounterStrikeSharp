@@ -170,29 +170,6 @@ public partial class CCSPlayerController
             team);
     }
 
-    /// <summary>
-    /// Get a ConVar value for given player
-    /// </summary>
-    /// <param name="conVar">Name of the convar to retrieve</param>
-    /// <returns>ConVar string value</returns>
-    /// <exception cref="InvalidOperationException">Entity is not valid</exception>
-    public string GetConVarValue(string conVar)
-    {
-        Guard.IsValidEntity(this);
-
-        return NativeAPI.GetClientConvarValue(Slot, conVar);
-    }
-
-    public string GetConVarValue(ConVar? conVar)
-    {
-        if (conVar == null)
-        {
-            throw new Exception("Invalid convar passed to 'GetConVarValue'");
-        }
-
-        return GetConVarValue(conVar.Name);
-    }
-
     public enum CvarQueryStatus
     {
         OK,
@@ -217,14 +194,14 @@ public partial class CCSPlayerController
     /// </summary>
     /// <param name="conVar">Name of the convar to retrieve</param>
     /// <param name="callback">Query callback</param>
-    /// <exception cref="InvalidOperationException">Entity is not valid / Controller can't be a bot.</exception>
+    /// <exception cref="InvalidOperationException">Entity is not valid / Controller can't be a bot or HLTV.</exception>
     /// <exception cref="ArgumentNullException">convar is null/empty/whitespace / Invalid callback</exception>
     public void QueryClientConvarValue(string conVar, ConvarQueryCallback callback)
     {
         Guard.IsValidEntity(this);
 
-        if (IsBot)
-            throw new InvalidOperationException("Controller can't be a bot.");
+        if (IsBot || IsHLTV)
+            throw new InvalidOperationException("Controller can't be a bot or HLTV.");
 
         ArgumentException.ThrowIfNullOrWhiteSpace(nameof(conVar));
         ArgumentException.ThrowIfNullOrEmpty(nameof(callback));
@@ -233,39 +210,9 @@ public partial class CCSPlayerController
     }
 
     /// <summary>
-    /// Sets a ConVar value on a fake client (bot).
-    /// </summary>
-    /// <param name="conVar">Console variable name</param>
-    /// <param name="value">String value to set</param>
-    /// <exception cref="InvalidOperationException">Entity is not valid</exception>
-    /// <exception cref="InvalidOperationException">Player is not a bot</exception>
-    public void SetFakeClientConVar(string conVar, string value)
-    {
-        Guard.IsValidEntity(this);
-        if (!IsBot) throw new InvalidOperationException("'SetFakeClientConVar' can only be called for fake clients (bots)");
-
-        NativeAPI.SetFakeClientConvarValue(Slot, conVar, value);
-    }
-
-    /// <summary>
-    /// <inheritdoc cref="SetFakeClientConVar(string,string)"/>
-    /// </summary>
-    /// <exception cref="ArgumentException"><paramref name="conVar"/> is <see langword="null"/></exception>
-    /// <inheritdoc cref="SetFakeClientConVar(string,string)" select="exception"/>
-    public void SetFakeClientConVar(ConVar conVar, string value)
-    {
-        if (conVar == null)
-        {
-            throw new ArgumentException("Invalid convar passed to 'SetFakeClientConVar'");
-        }
-
-        SetFakeClientConVar(conVar.Name, value);
-    }
-
-    /// <summary>
     /// Gets the active pawns button state. Will work even if the player is dead or observing.
     /// </summary>
-    public PlayerButtons Buttons => (PlayerButtons)Pawn.Value.MovementServices!.Buttons.ButtonStates[0];
+    public PlayerButtons Buttons => (PlayerButtons)Pawn.Value!.MovementServices!.Buttons.ButtonStates[0];
 
     /// <summary>
     /// Issue the specified command to the specified client (mimics that client typing the command at the console).

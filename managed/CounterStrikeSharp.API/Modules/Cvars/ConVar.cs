@@ -197,4 +197,13 @@ public class ConVar
 
         return new ConVar(ptr);
     }
+
+    public static IEnumerable<ConVar> ListConVars()
+    {
+        uint firstHandle = NativeAPI.GetFirstConvar();
+        for(; firstHandle != 0xFFFFFFFF; firstHandle = NativeAPI.GetNextConvar(firstHandle))
+        {
+            yield return new(NativeAPI.GetConvarFromHandle(firstHandle));
+        }
+    }
 }
