@@ -72,17 +72,10 @@ void ScriptContext::Reset()
 
 tl::optional<TNativeHandler> ScriptEngine::GetNativeHandler(uint64_t nativeIdentifier)
 {
-    static std::unordered_map<uint64_t, TNativeHandler>::iterator lastIt = g_registeredHandlers.end();
-    if (lastIt != g_registeredHandlers.end() && lastIt->first == nativeIdentifier)
-    {
-        return lastIt->second;
-    }
-
     auto it = g_registeredHandlers.find(nativeIdentifier);
 
     if (it != g_registeredHandlers.end())
     {
-        lastIt = it;
         return it->second;
     }
 
