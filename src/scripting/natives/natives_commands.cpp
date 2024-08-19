@@ -217,12 +217,7 @@ void ReplicateToClient(ScriptContext& scriptContext)
         return;
     }
 
-    INetworkMessageInternal* netMsg = globals::networkMessages->FindNetworkMessagePartial("SetConVar");
-    if (!netMsg)
-    {
-        scriptContext.ThrowNativeError("Couldn't find network message for this to work!");
-        return;
-    }
+    static INetworkMessageInternal* netMsg = globals::networkMessages->FindNetworkMessagePartial("SetConVar");
 
     auto msg = netMsg->AllocateMessage()->ToPB<CNETMsg_SetConVar>();
     CMsg_CVars_CVar* cvar = msg->mutable_convars()->add_cvars();

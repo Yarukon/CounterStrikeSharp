@@ -1,5 +1,5 @@
 using System;
-
+using System.Runtime.InteropServices;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
@@ -191,6 +191,45 @@ public partial class CCSPlayerController
         }
 
         return GetConVarValue(conVar.Name);
+    }
+
+    public enum CvarQueryStatus
+    {
+        OK,
+        NOT_FOUND,
+        NOT_CVAR,
+        CVAR_PROTECTED
+    }
+
+    public delegate void ConvarQueryCallback(PlayerControllerHandle controller, CvarQueryStatus status, string cvar, string value);
+
+    [StructLayout(LayoutKind.Explicit, Size = 4)]
+    public readonly struct PlayerControllerHandle
+    {
+        [FieldOffset(0)]
+        private readonly int Slot;
+
+        public readonly CCSPlayerController? Get() => Utilities.GetPlayerFromSlot(Slot);
+    }
+
+    /// <summary>
+    /// Query a ConVar value for given player
+    /// </summary>
+    /// <param name="conVar">Name of the convar to retrieve</param>
+    /// <param name="callback">Query callback</param>
+    /// <exception cref="InvalidOperationException">Entity is not valid / Controller can't be a bot.</exception>
+    /// <exception cref="ArgumentNullException">convar is null/empty/whitespace / Invalid callback</exception>
+    public void QueryClientConvarValue(string conVar, ConvarQueryCallback callback)
+    {
+        Guard.IsValidEntity(this);
+
+        if (IsBot)
+            throw new InvalidOperationException("Controller can't be a bot.");
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(nameof(conVar));
+        ArgumentException.ThrowIfNullOrEmpty(nameof(callback));
+
+        NativeAPI.QueryConvarValue(Slot, conVar, Marshal.GetFunctionPointerForDelegate(callback));
     }
 
     /// <summary>
