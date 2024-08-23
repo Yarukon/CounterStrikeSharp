@@ -82,7 +82,10 @@ namespace CounterStrikeSharp.API.Core
 
 		internal fxScriptContext m_extContext = new fxScriptContext();
 
-		[SecuritySafeCritical]
+        [ThreadStatic]
+        private static int _invokeDepth;
+
+        [SecuritySafeCritical]
 		public void Reset()
 		{
 			InternalReset();
@@ -94,14 +97,24 @@ namespace CounterStrikeSharp.API.Core
 			m_extContext.numArguments = 0;
 			m_extContext.numResults = 0;
             m_extContext.hasError = 0;
-            //CleanUp();
         }
 
 		[SecuritySafeCritical]
 		public void Invoke()
 		{
-			InvokeNativeInternal();
-			GlobalCleanUp();
+            _invokeDepth++;
+            try
+            {
+                InvokeNativeInternal();
+            }
+            finally
+            {
+                _invokeDepth--;
+                if (_invokeDepth == 0)
+                {
+                    GlobalCleanUp();
+                }
+            }
 		}
 
 		[SecurityCritical]
