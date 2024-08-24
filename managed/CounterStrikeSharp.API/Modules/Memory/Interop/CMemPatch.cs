@@ -1,8 +1,12 @@
-﻿using System;
+﻿using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory.Interop.Attributes;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +19,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         private byte[] BytesToPatch;
         private string Pattern;
         private nint Address;
+        private bool Patched;
 
         public CMemPatch(string signature, string bytesToPatch, CModule module = CModule.SERVER)
         {
@@ -40,8 +45,46 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             OriginalBytes = MemoryAccessor.MemRead(Address, BytesToPatch.Length);
         }
 
-        public void Patch() => MemoryAccessor.MemWrite(Address, BytesToPatch);
-        public void UnPatch() => MemoryAccessor.MemWrite(Address, OriginalBytes);
+        public void Patch()
+        {
+            MemoryAccessor.MemWrite(Address, BytesToPatch);
+            Patched = true;
+        }
+
+        public void UnPatch()
+        {
+            MemoryAccessor.MemWrite(Address, OriginalBytes);
+            Patched = false;
+        }
+
+        public bool IsPatched() => Patched;
+
+        private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        public static void InitializeMemoryPatches(object self)
+        {
+            Type selfType = self.GetType();
+            var fields = selfType.GetFields(Flags).Select(field => (field, field.GetCustomAttribute<MemPatchAttribute>())).Where(tuple => tuple.Item2 != null);
+            foreach (var (field, attribute) in fields)
+            {
+                string fieldName = field.Name;
+
+                string pattern = attribute!.Pattern;
+                string bytesToPatch = attribute!.BytesToPatch;
+                CModule module = attribute!.Module;
+
+                try
+                {
+                    object? instance = Activator.CreateInstance(typeof(CMemPatch), pattern, bytesToPatch, module);
+                    field.SetValue(self, instance);
+                    instance?.GetType().GetMethod("Patch")?.Invoke(instance, null);
+                    Application.Instance.Logger.LogInformation($"Initialized MemPatch field {fieldName} and Patched.");
+                }
+                catch (Exception ex)
+                {
+                    Application.Instance.Logger.LogInformation($"Failed to initialize MemPatch field {fieldName}.\n{ex.StackTrace}");
+                }
+            }
+        }
     }
 
     internal class MemoryAccessor
@@ -86,8 +129,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             byte[] buf = new byte[size];
             if (IsWindows)
             {
-                uint bytesRead;
-                if (!ReadProcessMemory(ProcessHandle, address, buf, (uint)size, out bytesRead))
+                if (!ReadProcessMemory(ProcessHandle, address, buf, (uint)size, out _))
                     throw new Exception("Failed to read memory.");
             }
             else
@@ -116,11 +158,10 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                 if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, PAGE_EXECUTE_READWRITE, out oldProtect))
                     throw new Exception("Failed to change memory protection.");
 
-                uint bytesWritten;
-                if (!WriteProcessMemory(ProcessHandle, address, buf, (uint)buf.Length, out bytesWritten))
+                if (!WriteProcessMemory(ProcessHandle, address, buf, (uint)buf.Length, out _))
                     throw new Exception("Failed to write memory.");
 
-                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, oldProtect, out oldProtect))
+                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, oldProtect, out _))
                     throw new Exception("Failed to restore memory protection.");
             }
             else
