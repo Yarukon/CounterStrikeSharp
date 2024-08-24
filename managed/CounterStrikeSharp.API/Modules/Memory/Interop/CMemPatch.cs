@@ -16,9 +16,6 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         private string Pattern;
         private nint Address;
 
-        [ThreadStatic]
-        private static nint ProcessHandle = Process.GetCurrentProcess().Handle;
-
         public CMemPatch(string signature, string bytesToPatch, CModule module = CModule.SERVER)
         {
             Pattern = signature;
@@ -40,11 +37,11 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             }
 
             // Copy the original bytes
-            OriginalBytes = MemoryAccessor.MemRead(ProcessHandle, Address, BytesToPatch.Length);
+            OriginalBytes = MemoryAccessor.MemRead(Address, BytesToPatch.Length);
         }
 
-        public void Patch() => MemoryAccessor.MemWrite(ProcessHandle, Address, BytesToPatch);
-        public void UnPatch() => MemoryAccessor.MemWrite(ProcessHandle, Address, OriginalBytes);
+        public void Patch() => MemoryAccessor.MemWrite(Address, BytesToPatch);
+        public void UnPatch() => MemoryAccessor.MemWrite(Address, OriginalBytes);
     }
 
     internal class MemoryAccessor
@@ -64,9 +61,9 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool VirtualProtectEx(nint hProcess, nint lpAddress, nuint dwSize, uint flNewProtect, out uint lpflOldProtect);
 
-        private const uint PROCESS_ALL_ACCESS = 0x1F0FFF;
         private const uint PAGE_EXECUTE_READWRITE = 0x40;
-        private const uint PAGE_READONLY = 0x02;
+
+        private static readonly nint ProcessHandle = Process.GetCurrentProcess().Handle;
 
         // Linux
         [DllImport("libc.so.6", SetLastError = true)]
@@ -84,22 +81,21 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         private const int O_RDONLY = 0;
         private const int O_RDWR = 0x02;
 
-        internal static byte[] MemRead(nint handle, nint address, int size)
+        internal static byte[] MemRead(nint address, int size)
         {
             byte[] buf = new byte[size];
             if (IsWindows)
             {
                 uint bytesRead;
-                if (!ReadProcessMemory(handle, address, buf, (uint)size, out bytesRead))
+                if (!ReadProcessMemory(ProcessHandle, address, buf, (uint)size, out bytesRead))
                     throw new Exception("Failed to read memory.");
             }
             else
             {
-                string memPath = $"/proc/self/mem";
-                nint _handle = open(memPath, O_RDONLY);
+                nint _handle = open("/proc/self/mem", O_RDONLY);
 
                 if (_handle == 0)
-                    throw new Exception($"Failed to open {memPath}.");
+                    throw new Exception($"Failed to open /proc/self/mem.");
 
                 long result = pread(_handle, buf, (ulong)size, (ulong)address);
                 if (result == -1)
@@ -111,29 +107,28 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             return buf;
         }
 
-        internal static void MemWrite(nint handle, nint address, byte[] buf)
+        internal static void MemWrite(nint address, byte[] buf)
         {
             if (IsWindows)
             {
                 uint oldProtect;
 
-                if (!VirtualProtectEx(handle, address, (nuint)buf.Length, PAGE_EXECUTE_READWRITE, out oldProtect))
+                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, PAGE_EXECUTE_READWRITE, out oldProtect))
                     throw new Exception("Failed to change memory protection.");
 
                 uint bytesWritten;
-                if (!WriteProcessMemory(handle, address, buf, (uint)buf.Length, out bytesWritten))
+                if (!WriteProcessMemory(ProcessHandle, address, buf, (uint)buf.Length, out bytesWritten))
                     throw new Exception("Failed to write memory.");
 
-                if (!VirtualProtectEx(handle, address, (nuint)buf.Length, oldProtect, out oldProtect))
+                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, oldProtect, out oldProtect))
                     throw new Exception("Failed to restore memory protection.");
             }
             else
             {
-                string memPath = $"/proc/self/mem";
-                nint _handle = open(memPath, O_RDWR);
+                nint _handle = open("/proc/self/mem", O_RDWR);
 
                 if (_handle == 0)
-                    throw new Exception($"Failed to open {memPath}.");
+                    throw new Exception($"Failed to open /proc/self/mem.");
 
                 long result = pwrite(_handle, buf, (ulong)buf.Length, (ulong)address);
                 if (result == -1)
