@@ -95,7 +95,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             }
             else
             {
-                string memPath = $"/proc/{Process.GetCurrentProcess().Id}/mem";
+                string memPath = $"/proc/self/mem";
                 nint _handle = open(memPath, O_RDONLY);
 
                 if (_handle == 0)
@@ -129,7 +129,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
             }
             else
             {
-                string memPath = $"/proc/{Process.GetCurrentProcess().Id}/mem";
+                string memPath = $"/proc/self/mem";
                 nint _handle = open(memPath, O_RDWR);
 
                 if (_handle == 0)
