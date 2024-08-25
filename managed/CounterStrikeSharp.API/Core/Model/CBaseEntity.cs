@@ -49,7 +49,7 @@ public partial class CBaseEntity
     /// <summary>
     /// Check if this entity is player pawn
     /// </summary>
-    /// <returns>Return true if this entity is player pawn</returns>
+    /// <returns>Returns true if this entity is player pawn</returns>
     public bool IsPlayerPawn()
     {
         Guard.IsValidEntity(this);
@@ -69,7 +69,7 @@ public partial class CBaseEntity
     /// <summary>
     /// Check if this entity is player controller
     /// </summary>
-    /// <returns>Return true if this entity is player controller</returns>
+    /// <returns>Returns true if this entity is player controller</returns>
     public bool IsPlayerController()
     {
         Guard.IsValidEntity(this);
