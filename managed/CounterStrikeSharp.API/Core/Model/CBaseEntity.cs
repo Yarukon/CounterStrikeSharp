@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using CounterStrikeSharp.API.Modules.Memory;
+using CounterStrikeSharp.API.Modules.Memory.Interop;
 using CounterStrikeSharp.API.Modules.Utils;
 
 namespace CounterStrikeSharp.API.Core;
@@ -41,6 +42,42 @@ public partial class CBaseEntity
         }
         else
             NativeAPI.DispatchSpawn(this.Handle, 0, 0);
+    }
+
+    // Typically is CBaseEntity_IsPlayerController + 1
+    static int isPawnOffset = GameData.GetOffset("CBaseEntity_IsPlayerPawn");
+    /// <summary>
+    /// Check if this entity is player pawn
+    /// </summary>
+    /// <returns>Return true if this entity is player pawn</returns>
+    public bool IsPlayerPawn()
+    {
+        Guard.IsValidEntity(this);
+
+        unsafe
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, bool>) UnsafeVFTableCall.GetVirtualFunctionPointer(Handle, isPawnOffset))(Handle);
+        }
+    }
+
+    // Little note for this
+    // Search for "ClanTagChanged" string
+    // Locate to the x-ref function, there's a line (a2 is the controller)
+    // if ( a2 && (*(unsigned __int8 (__fastcall **)(_QWORD *))(*a2 + 0x508i64))(a2) )
+    // the 0x508 is the offset for this (divided by 8)
+    static int isControllerOffset = GameData.GetOffset("CBaseEntity_IsPlayerController");
+    /// <summary>
+    /// Check if this entity is player controller
+    /// </summary>
+    /// <returns>Return true if this entity is player controller</returns>
+    public bool IsPlayerController()
+    {
+        Guard.IsValidEntity(this);
+
+        unsafe
+        {
+            return ((delegate* unmanaged[Cdecl]<nint, bool>) UnsafeVFTableCall.GetVirtualFunctionPointer(Handle, isControllerOffset))(Handle);
+        }
     }
 
     /// <summary>

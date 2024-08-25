@@ -32,6 +32,18 @@
       "linux": 256
     }
   },
+  "CBaseEntity_IsPlayerPawn": {
+    "offsets": {
+      "windows": 161,
+      "linux": 160
+    }
+  },
+  "CBaseEntity_IsPlayerController": {
+    "offsets": {
+      "windows": 160,
+      "linux": 159
+    }
+  },
   "CBasePlayerController_SetPawn": {
     "signatures": {
       "library": "server",
