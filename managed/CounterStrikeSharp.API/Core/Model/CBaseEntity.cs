@@ -44,6 +44,8 @@ public partial class CBaseEntity
             NativeAPI.DispatchSpawn(this.Handle, 0, 0);
     }
 
+    // Typically is CBaseEntity_IsPlayerController + 1
+    static int isPawnOffset = GameData.GetOffset("CBaseEntity_IsPlayerPawn");
     /// <summary>
     /// Check if this entity is player pawn
     /// </summary>
@@ -52,9 +54,18 @@ public partial class CBaseEntity
     {
         Guard.IsValidEntity(this);
 
-        return DesignerName == "player";
+        unsafe
+        {
+            return ((delegate* unmanaged[Cdecl]<bool>) UnsafeVFTableCall.GetVirtualFunctionPointer(Handle, isPawnOffset))();
+        }
     }
 
+    // Little note for this
+    // Search for "ClanTagChanged" string
+    // Locate to the x-ref function, there's a line (a2 is the controller)
+    // if ( a2 && (*(unsigned __int8 (__fastcall **)(_QWORD *))(*a2 + 0x508i64))(a2) )
+    // the 0x508 is the offset for this (divided by 8)
+    static int isControllerOffset = GameData.GetOffset("CBaseEntity_IsPlayerController");
     /// <summary>
     /// Check if this entity is player controller
     /// </summary>
@@ -63,7 +74,10 @@ public partial class CBaseEntity
     {
         Guard.IsValidEntity(this);
 
-        return DesignerName == "cs_player_controller";
+        unsafe
+        {
+            return ((delegate* unmanaged[Cdecl]<bool>) UnsafeVFTableCall.GetVirtualFunctionPointer(Handle, isControllerOffset))();
+        }
     }
 
     /// <summary>
