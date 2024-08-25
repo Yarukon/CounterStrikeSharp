@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,8 +19,13 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
 
             unsafe
             {
-                nint* vftable = *(nint**)address;
-                return vftable[offset];
+                nint** vftable = *(nint***)address;
+
+                if (vftable == null)
+                    throw new ArgumentException("Failed to get the virtual function table.");
+
+                nint addr = (nint) vftable[offset];
+                return addr;
             }
         }
     }
