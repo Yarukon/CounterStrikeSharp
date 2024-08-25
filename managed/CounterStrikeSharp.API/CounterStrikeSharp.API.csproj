@@ -16,6 +16,7 @@
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <SourceControlInformationFeatureSupported>true</SourceControlInformationFeatureSupported>
+        <EnableLibraryImportGenerator>true</EnableLibraryImportGenerator>
         <!-- <GenerateCompatibilitySuppressionFile>true</GenerateCompatibilitySuppressionFile> -->
     </PropertyGroup>
     <PropertyGroup>

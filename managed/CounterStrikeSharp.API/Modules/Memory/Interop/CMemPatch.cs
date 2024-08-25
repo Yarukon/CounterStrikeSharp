@@ -58,6 +58,7 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
         }
 
         public bool IsPatched() => Patched;
+        public nint GetAddress() => Address;
 
         private const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
         public static void InitializeMemoryPatches(object self)
@@ -77,105 +78,94 @@ namespace CounterStrikeSharp.API.Modules.Memory.Interop
                     object? instance = Activator.CreateInstance(typeof(CMemPatch), pattern, bytesToPatch, module);
                     field.SetValue(self, instance);
                     instance?.GetType().GetMethod("Patch")?.Invoke(instance, null);
-                    Application.Instance.Logger.LogInformation($"Initialized MemPatch field {fieldName} and Patched.");
+                    Application.Instance.Logger.LogInformation($"Initialized MemPatch field {fieldName} at {(instance as CMemPatch)!.GetAddress():X} and Patched.");
+                }
+                catch (TargetInvocationException ex)
+                {
+                    Application.Instance.Logger.LogInformation($"Failed to initialize MemPatch field {fieldName}. {ex.InnerException?.Message}\n{ex.InnerException?.StackTrace}");
                 }
                 catch (Exception ex)
                 {
-                    Application.Instance.Logger.LogInformation($"Failed to initialize MemPatch field {fieldName}.\n{ex.StackTrace}");
+                    Application.Instance.Logger.LogInformation($"Failed to initialize MemPatch field {fieldName}. {ex.Message}\n{ex.StackTrace}");
                 }
             }
         }
     }
 
-    internal class MemoryAccessor
+    internal static partial class NativeMethods
     {
-        private static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-
         // Windows
-        [DllImport("kernel32.dll")]
-        private static extern nint OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool ReadProcessMemory(nint hProcess, nint lpBaseAddress, byte[] lpBuffer, uint nSize, out uint lpNumberOfBytesRead);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool WriteProcessMemory(nint hProcess, nint lpBaseAddress, byte[] lpBuffer, uint nSize, out uint lpNumberOfBytesWritten);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool VirtualProtectEx(nint hProcess, nint lpAddress, nuint dwSize, uint flNewProtect, out uint lpflOldProtect);
-
-        private const uint PAGE_EXECUTE_READWRITE = 0x40;
-
-        private static readonly nint ProcessHandle = Process.GetCurrentProcess().Handle;
+        [LibraryImport("kernel32.dll", EntryPoint = "VirtualProtect", SetLastError = true)]
+        private static partial int _VirtualProtect(nint lpAddress, nuint dwSize, uint flNewProtect, out uint lpflOldProtect);
+        internal static bool VirtualProtect(nint lpAddress, nuint dwSize, uint flNewProtect, out uint lpflOldProtect) => _VirtualProtect(lpAddress, dwSize, flNewProtect, out lpflOldProtect) != 0;
 
         // Linux
-        [DllImport("libc.so.6", SetLastError = true)]
-        private static extern nint open(string pathname, int flags);
+        [LibraryImport("libc.so.6", SetLastError = true)]
+        internal static partial int mprotect(nint addr, nuint len, int prot);
 
-        [DllImport("libc.so.6", SetLastError = true)]
-        private static extern int close(nint fd);
+        [LibraryImport("libc.so.6", SetLastError = true)]
+        internal static partial IntPtr strerror(int errnum);
 
-        [DllImport("libc.so.6", SetLastError = true)]
-        private static extern long pread(nint fd, byte[] buf, ulong count, ulong offset);
+    }
 
-        [DllImport("libc.so.6", SetLastError = true)]
-        private static extern long pwrite(nint fd, byte[] buf, ulong count, ulong offset);
+    internal class MemoryAccessor
+    {
+        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        private const int O_RDONLY = 0;
-        private const int O_RDWR = 0x02;
+        // Windows
+        internal const uint PAGE_EXECUTE_READWRITE = 0x40;
+
+        // Linux
+        internal const int PROT_READ = 0x1;
+        internal const int PROT_WRITE = 0x2;
+        internal const int PROT_EXEC = 0x4;
+
+        private static string? GetLastErrorString()
+        {
+            if (IsWindows)
+                return Marshal.GetLastWin32Error().ToString();
+            else
+                return Marshal.PtrToStringAnsi(NativeMethods.strerror(Marshal.GetLastPInvokeError()));
+        }
 
         internal static byte[] MemRead(nint address, int size)
         {
-            byte[] buf = new byte[size];
-            if (IsWindows)
-            {
-                if (!ReadProcessMemory(ProcessHandle, address, buf, (uint)size, out _))
-                    throw new Exception("Failed to read memory.");
-            }
-            else
-            {
-                nint _handle = open("/proc/self/mem", O_RDONLY);
-
-                if (_handle == 0)
-                    throw new Exception($"Failed to open /proc/self/mem.");
-
-                long result = pread(_handle, buf, (ulong)size, (ulong)address);
-                if (result == -1)
-                    throw new Exception("Failed to read memory.");
-
-                close(_handle);
-            }
-
-            return buf;
+            byte[] buffer = new byte[size];
+            Marshal.Copy(address, buffer, 0, size);
+            return buffer;
         }
 
-        internal static void MemWrite(nint address, byte[] buf)
+        internal static void MemWrite(nint address, byte[] buffer)
         {
             if (IsWindows)
             {
-                uint oldProtect;
+                if (!NativeMethods.VirtualProtect(address, (nuint)buffer.Length, PAGE_EXECUTE_READWRITE, out uint oldProtect))
+                    throw new Exception($"Failed to change memory protection at address {address:X}. Error: {GetLastErrorString()}");
 
-                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, PAGE_EXECUTE_READWRITE, out oldProtect))
-                    throw new Exception("Failed to change memory protection.");
-
-                if (!WriteProcessMemory(ProcessHandle, address, buf, (uint)buf.Length, out _))
-                    throw new Exception("Failed to write memory.");
-
-                if (!VirtualProtectEx(ProcessHandle, address, (nuint)buf.Length, oldProtect, out _))
-                    throw new Exception("Failed to restore memory protection.");
+                try
+                {
+                    Marshal.Copy(buffer, 0, address, buffer.Length);
+                }
+                finally
+                {
+                    if (!NativeMethods.VirtualProtect(address, (nuint)buffer.Length, oldProtect, out _))
+                        throw new Exception($"Failed to restore memory protection at address {address:X}. Error: {GetLastErrorString() ?? "unknown error"}");
+                }
             }
             else
             {
-                nint _handle = open("/proc/self/mem", O_RDWR);
+                if (NativeMethods.mprotect(address, (nuint)buffer.Length, PROT_READ | PROT_WRITE | PROT_EXEC) != 0)
+                    throw new Exception($"Failed to change memory protection at address {address:X}. Error: {GetLastErrorString() ?? "unknown error"}");
 
-                if (_handle == 0)
-                    throw new Exception($"Failed to open /proc/self/mem.");
-
-                long result = pwrite(_handle, buf, (ulong)buf.Length, (ulong)address);
-                if (result == -1)
-                    throw new Exception("Failed to write memory.");
-
-                close(_handle);
+                try
+                {
+                    Marshal.Copy(buffer, 0, address, buffer.Length);
+                }
+                finally
+                {
+                    if (NativeMethods.mprotect(address, (nuint)buffer.Length, PROT_READ | PROT_EXEC) != 0)
+                        throw new Exception($"Failed to restore memory protection at address {address:X}. Error: {GetLastErrorString() ?? "unknown error"}");
+                }
             }
         }
     }
