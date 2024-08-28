@@ -12,7 +12,7 @@ public class UserMessage : NativeObject, IDisposable
     public UserMessage(IntPtr pointer) : base(pointer)
     {
         Recipients = new CRecipientFilter(NativeAPI.UsermessageGetrecipients(this));
-        Recipients.CollectionChanged = () => NativeAPI.UsermessageSetrecipients(this, Recipients.GetRecipients());
+        Recipients.CollectionChanged = () => NativeAPI.UsermessageSetrecipients(this, Recipients.GetRecipientsMask());
     }
 
     /// <summary>
@@ -145,7 +145,7 @@ public class UserMessage : NativeObject, IDisposable
         set
         {
             _recipients = value;
-            NativeAPI.UsermessageSetrecipients(this, _recipients.GetRecipients());
+            NativeAPI.UsermessageSetrecipients(this, _recipients.GetRecipientsMask());
         }
     }
 

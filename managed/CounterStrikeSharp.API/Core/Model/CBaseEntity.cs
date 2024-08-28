@@ -111,7 +111,7 @@ public partial class CBaseEntity
         Guard.IsValidEntity(this);
 
         if (filter != null)
-            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, true, filter.GetRecipients());
+            NativeAPI.EmitSound(this.Index, soundName, pitch, volume, true, filter.GetRecipientsMask());
         else
             NativeAPI.EmitSound(this.Index, soundName, pitch, volume, false, 0);
     }
@@ -127,7 +127,7 @@ public partial class CBaseEntity
     /// <param name="attachmentName">Attachment name</param>
     public void DispatchParticle(string particleName, CRecipientFilter filter, ParticleAttachment attachType = ParticleAttachment.PATTACH_POINT_FOLLOW, byte attachmentPoint = 0, string attachmentName = "")
     {
-        NativeAPI.DispatchParticle(this.Handle, particleName, filter.GetRecipients(), (uint)attachType, attachmentPoint, attachmentName);
+        NativeAPI.DispatchParticle(this.Handle, particleName, filter.GetRecipientsMask(), (uint)attachType, attachmentPoint, attachmentName);
     }
 
     /// <summary>
@@ -139,6 +139,6 @@ public partial class CBaseEntity
     /// <param name="angle">Particle render angle</param>
     public void DispatchParticle(string particleName, CRecipientFilter filter, Vector origin, QAngle angle)
     {
-        NativeAPI.DispatchParticle2(this.Handle, particleName, filter.GetRecipients(), origin.Handle, angle.Handle);
+        NativeAPI.DispatchParticle2(this.Handle, particleName, filter.GetRecipientsMask(), origin.Handle, angle.Handle);
     }
 }

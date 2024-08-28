@@ -67,6 +67,12 @@ public class CRecipientFilter : IMarshalToNative
         }
     }
 
+    public IEnumerable<CCSPlayerController?> GetRecipients()
+    {
+        foreach(int slot in recipients)
+            yield return Utilities.GetPlayerFromSlot(slot);
+    }
+
     public void AddRecipient(CCSPlayerController? controller)
     {
         Guard.IsValidEntity(controller);
@@ -111,10 +117,10 @@ public class CRecipientFilter : IMarshalToNative
 
     public IEnumerable<object> GetNativeObject()
     {
-        yield return GetRecipients();
+        yield return GetRecipientsMask();
     }
 
-    internal ulong GetRecipients()
+    internal ulong GetRecipientsMask()
     {
         ulong mask = 0;
 

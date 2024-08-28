@@ -275,14 +275,14 @@ namespace CounterStrikeSharp.API
         public static void EmitSound(uint index, string soundName, float pitch = 1f, float volume = 1f, CRecipientFilter? filter = null)
         {
             if (filter != null)
-                NativeAPI.EmitSound(index, soundName, pitch, volume, true, filter.GetRecipients());
+                NativeAPI.EmitSound(index, soundName, pitch, volume, true, filter.GetRecipientsMask());
             else
                 NativeAPI.EmitSound(index, soundName, pitch, volume, false, 0);
         }
 
         public static void DispatchParticle(nint pEntity, string particleName, CRecipientFilter filter, nint origin, nint angle)
         {
-            NativeAPI.DispatchParticle2(pEntity, particleName, filter.GetRecipients(), origin, angle);
+            NativeAPI.DispatchParticle2(pEntity, particleName, filter.GetRecipientsMask(), origin, angle);
         }
     }
 }
