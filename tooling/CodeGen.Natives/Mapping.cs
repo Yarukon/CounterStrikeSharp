@@ -56,6 +56,8 @@ public class Mapping
                 return "ulong";
             case "byte":
                 return "byte";
+            case "long":
+                return "long";
             case "func":
             case "callback":
                 return "InputArgument";
@@ -71,6 +73,10 @@ public class Mapping
                 return "DataType";
             case "CommandCallingContext":
                 return "CommandCallingContext";
+            case "UserMessage":
+                return "UserMessage";
+            case "RecipientFilter":
+                return "CRecipientFilter";
             case "any":
                 return "T";
         }

@@ -28,6 +28,7 @@ using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
+using CounterStrikeSharp.API.Modules.Utils;
 
 namespace CounterStrikeSharp.API.Core
 {
@@ -218,6 +219,15 @@ namespace CounterStrikeSharp.API.Core
 
 				return;
 			}
+            else if (arg is IMarshalToNative marshalToNative)
+            {
+                foreach (var value in marshalToNative.GetNativeObject())
+                {
+                    Push(context ,value);
+                }
+
+                return;
+            }
 			else if (arg is NativeObject nativeObject)
 			{
 				Push(context, (InputArgument)nativeObject);

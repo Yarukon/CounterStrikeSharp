@@ -23,6 +23,7 @@
 #include "core/managers/entity_manager.h"
 #include "core/managers/server_manager.h"
 #include "core/managers/voice_manager.h"
+#include "core/managers/usermessage_manager.h"
 #include <public/game/server/iplayerinfo.h>
 #include <public/entity2/entitysystem.h>
 #include "core/serversideclient.h"
@@ -54,6 +55,7 @@ IUniformRandomStream* randomStream = nullptr;
 IEngineTrace* engineTrace = nullptr;
 IEngineSound* engineSound = nullptr;
 IEngineServiceMgr* engineServiceManager = nullptr;
+INetworkMessages* networkMessages = nullptr;
 INetworkStringTableContainer* netStringTables = nullptr;
 CGlobalVars* globalVars = nullptr;
 IFileSystem* fileSystem = nullptr;
@@ -93,6 +95,7 @@ ChatManager chatManager;
 ServerManager serverManager;
 VoiceManager voiceManager;
 TickScheduler tickScheduler;
+UserMessageManager userMessageManager;
 
 bool gameLoopInitialized = false;
 GetLegacyGameEventListener_t* GetLegacyGameEventListener = nullptr;
