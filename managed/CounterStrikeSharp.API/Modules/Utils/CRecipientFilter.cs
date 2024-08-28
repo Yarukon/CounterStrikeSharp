@@ -19,18 +19,58 @@ namespace CounterStrikeSharp.API.Modules.Utils;
 /// A generic filter for determining whom to send message/sounds etc.
 /// to and providing a bit of additional state information.
 /// </summary>
-public class CRecipientFilter
+public class CRecipientFilter : IMarshalToNative
 {
     private List<int> recipients = new();
 
-    public int GetRecipientCount() => recipients.Count;
+    internal Action? CollectionChanged;
 
-    public int GetRecipientByIndex(int index)
+    public CRecipientFilter() { }
+
+    public CRecipientFilter(params CCSPlayerController[] slots)
     {
-        if (index < 0 || index > GetRecipientCount())
-            return -1;
+        foreach (var slot in slots)
+        {
+            AddRecipient(slot.Slot);
+        }
+    }
 
-        return recipients[index];
+    public CRecipientFilter(params int[] slots)
+    {
+        foreach (var slot in slots)
+        {
+            AddRecipient(slot);
+        }
+    }
+
+    public CRecipientFilter(ulong mask)
+    {
+        for (var i = 0; i < 64; i++)
+        {
+            if ((mask & ((ulong)1 << i)) != 0)
+            {
+                AddRecipient(i);
+            }
+        }
+    }
+
+    public int Count => recipients.Count;
+
+    public void AddAllPlayers()
+    {
+        foreach(CCSPlayerController controller in Utilities.GetPlayers())
+        {
+            if (controller.IsBot || controller.IsHLTV)
+                continue;
+
+            AddRecipient(controller);
+        }
+    }
+
+    public void AddRecipient(CCSPlayerController? controller)
+    {
+        Guard.IsValidEntity(controller);
+        AddRecipient(controller!.Slot);
     }
 
     public void AddRecipient(int playerSlot)
@@ -42,9 +82,37 @@ public class CRecipientFilter
             return;
 
         recipients.Add(playerSlot);
+        CollectionChanged?.Invoke();
     }
 
-    public void Clear() => recipients.Clear();
+    public void RemoveRecipient(CCSPlayerController? controller)
+    {
+        Guard.IsValidEntity(controller);
+        RemoveRecipient(controller!.Slot);
+    }
+
+    public void RemoveRecipient(int playerSlot)
+    {
+        if (playerSlot < 0 || playerSlot > 63)
+            throw new ArgumentOutOfRangeException($"Slot {playerSlot} is out of range.");
+
+        if (!recipients.Contains(playerSlot)) // Silently fail if not exist
+            return;
+
+        recipients.Remove(playerSlot);
+        CollectionChanged?.Invoke();
+    }
+
+    public void Clear()
+    {
+        recipients.Clear();
+        CollectionChanged?.Invoke();
+    }
+
+    public IEnumerable<object> GetNativeObject()
+    {
+        yield return GetRecipients();
+    }
 
     internal ulong GetRecipients()
     {

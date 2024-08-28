@@ -171,7 +171,7 @@ namespace TestPlugin
                     message.SetFloat("frequency", 10f);
                     message.SetInt("command", 0);
 
-                    message.Send(@event.Attacker);
+                    message.Send(new(@event.Attacker));
                 }
 
                 return HookResult.Continue;
@@ -575,8 +575,7 @@ namespace TestPlugin
             if (player == null) return;
             if (!player.PlayerPawn.IsValid) return;
 
-            CRecipientFilter filter = new();
-            filter.AddRecipient(player.Slot);
+            CRecipientFilter filter = new(player.Slot);
             player.PlayerPawn.Value?.EmitSound("sas.negative01", 1f, 1f, filter);
         }
 

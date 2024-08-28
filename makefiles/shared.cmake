@@ -66,7 +66,6 @@ include_directories(
     libraries/dyncall/dynload
     libraries/dyncall/dyncall
     libraries/spdlog/include
-    # libraries/protobuf
     libraries/tl
     libraries/funchook/include
     libraries/DynoHook/src

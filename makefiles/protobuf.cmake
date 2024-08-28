@@ -1,7 +1,17 @@
 set(PROTO_TARGETS
 	${SOURCESDK_DIR}/common/network_connection.proto
 	${SOURCESDK_DIR}/common/networkbasetypes.proto
+    ${SOURCESDK_DIR}/game/shared/cs/cs_gameevents.proto
+    ${SOURCESDK_DIR}/common/engine_gcmessages.proto
+    ${SOURCESDK_DIR}/gcsdk/gcsdk_gcmessages.proto
+    ${SOURCESDK_DIR}/game/shared/cstrike15/cstrike15_gcmessages.proto
+    ${SOURCESDK_DIR}/game/shared/cstrike15/cstrike15_usermessages.proto
     ${SOURCESDK_DIR}/common/netmessages.proto
+    ${SOURCESDK_DIR}/gcsdk/steammessages.proto
+    ${SOURCESDK_DIR}/game/shared/usermessages.proto
+    ${SOURCESDK_DIR}/game/shared/gameevents.proto
+    ${SOURCESDK_DIR}/game/shared/clientmessages.proto
+    ${SOURCESDK_DIR}/game/shared/te.proto
 )
 
 if (UNIX)

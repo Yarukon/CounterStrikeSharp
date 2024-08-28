@@ -5,14 +5,14 @@ namespace CounterStrikeSharp.API.Modules.UserMessages;
 
 public class UserMessage : NativeObject, IDisposable
 {
-    private RecipientFilter _recipients;
+    private CRecipientFilter _recipients;
 
     public delegate HookResult UserMessageHandler(UserMessage native);
 
     public UserMessage(IntPtr pointer) : base(pointer)
     {
-        Recipients = new RecipientFilter(NativeAPI.UsermessageGetrecipients(this));
-        Recipients.CollectionChanged = () => NativeAPI.UsermessageSetrecipients(this, Recipients.GetRecipientMask());
+        Recipients = new CRecipientFilter(NativeAPI.UsermessageGetrecipients(this));
+        Recipients.CollectionChanged = () => NativeAPI.UsermessageSetrecipients(this, Recipients.GetRecipients());
     }
 
     /// <summary>
@@ -77,13 +77,9 @@ public class UserMessage : NativeObject, IDisposable
     public void AddString(string fieldName, string value) => NativeAPI.PbAddstring(this, fieldName, value);
     public void AddBool(string fieldName, bool value) => NativeAPI.PbAddbool(this, fieldName, value);
 
-    // public UserMessage ReadMessage(string fieldName) => NativeAPI.PbReadmessage(this, fieldName);
-    // public UserMessage ReadRepeatedMessage(string fieldName, int index ) => NativeAPI.PbReadrepeatedmessage(this, fieldName, index);
-    // public UserMessage AddMessage(string fieldName) => NativeAPI.PbAddmessage(this, fieldName);
-
     public void Send() => NativeAPI.UsermessageSend(this);
 
-    public void Send(RecipientFilter recipientFilter)
+    public void Send(CRecipientFilter recipientFilter)
     {
         Recipients = recipientFilter;
         Send();
@@ -143,13 +139,13 @@ public class UserMessage : NativeObject, IDisposable
     /// </summary>
     public string DebugString => NativeAPI.PbGetdebugstring(this);
 
-    public RecipientFilter Recipients
+    public CRecipientFilter Recipients
     {
         get => _recipients;
         set
         {
             _recipients = value;
-            NativeAPI.UsermessageSetrecipients(this, _recipients.GetRecipientMask());
+            NativeAPI.UsermessageSetrecipients(this, _recipients.GetRecipients());
         }
     }
 

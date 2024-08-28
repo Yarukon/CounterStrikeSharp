@@ -1,84 +1,71 @@
-/*
- *  This file is part of CounterStrikeSharp.
- *  CounterStrikeSharp is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  CounterStrikeSharp is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with CounterStrikeSharp.  If not, see <https://www.gnu.org/licenses/>. *
- */
-
 #include "irecipientfilter.h"
-
-class CSingleRecipientFilter : public IRecipientFilter
-{
-  public:
-    CSingleRecipientFilter(CPlayerSlot iRecipient, NetChannelBufType_t nBufType = BUF_RELIABLE, bool bInitMessage = false)
-        : m_iRecipient(iRecipient), m_nBufType(nBufType), m_bInitMessage(bInitMessage)
-    {
-    }
-
-    ~CSingleRecipientFilter() override {}
-
-    NetChannelBufType_t GetNetworkBufType(void) const override { return m_nBufType; }
-    bool IsInitMessage(void) const override { return m_bInitMessage; }
-    int GetRecipientCount(void) const override { return 1; }
-    CPlayerSlot GetRecipientIndex(int slot) const override { return m_iRecipient; }
-
-  private:
-    CPlayerSlot m_iRecipient;
-    NetChannelBufType_t m_nBufType;
-    bool m_bInitMessage;
-};
+#include "core/globals.h"
+#include "core/managers/player_manager.h"
 
 class CRecipientFilter : public IRecipientFilter
 {
-  public:
+public:
     CRecipientFilter()
     {
-        m_nBufType = BUF_RELIABLE;
+        m_NetworkBufType = NetChannelBufType_t::BUF_RELIABLE;
         m_bInitMessage = false;
+    }
+
+    CRecipientFilter(IRecipientFilter* source, int iExcept = -1)
+    {
+        m_NetworkBufType = source->GetNetworkBufType();
+        m_bInitMessage = source->IsInitMessage();
+        m_Recipients.RemoveAll();
+
+        for (int i = 0; i < source->GetRecipientCount(); ++i)
+        {
+            if (source->GetRecipientIndex(i).Get() != iExcept)
+                m_Recipients.AddToTail(source->GetRecipientIndex(i));
+        }
     }
 
     ~CRecipientFilter() override {}
 
-    NetChannelBufType_t GetNetworkBufType(void) const override { return m_nBufType; }
+    NetChannelBufType_t GetNetworkBufType(void) const override { return m_NetworkBufType; }
     bool IsInitMessage(void) const override { return m_bInitMessage; }
     int GetRecipientCount(void) const override { return m_Recipients.Count(); }
-
+    
     CPlayerSlot GetRecipientIndex(int slot) const override
     {
-        if (slot < 0 || slot >= GetRecipientCount()) return CPlayerSlot(-1);
+        if (slot < 0 || slot >= GetRecipientCount())
+            return CPlayerSlot(-1);
 
         return m_Recipients[slot];
     }
 
+    void AddAllPlayers(void)
+    {
+        m_Recipients.RemoveAll();
+
+        for (int i = 0; i < 64; i++) {
+            counterstrikesharp::CPlayer* player = counterstrikesharp::globals::playerManager.GetPlayerBySlot(i);
+            if (player == nullptr || !player->IsConnected()) // Since the cssharp doesn't remove player from the array
+                continue;
+
+            AddRecipient(i);
+        }
+    }
+
     void AddRecipient(CPlayerSlot slot)
     {
-        if (m_Recipients.Find(slot) != m_Recipients.InvalidIndex()) return;
+        if (m_Recipients.Find(slot) != m_Recipients.InvalidIndex())
+            return;
 
         m_Recipients.AddToTail(slot);
     }
 
-    void AddRecipientsFromMask(uint64 mask)
+    void AddRecipientsByMasking(uint64 recipients)
     {
         for (int i = 0; i < 64; ++i)
-        {
-            if (mask & (uint64)1 << i)
-            {
-                AddRecipient(CPlayerSlot(i));
-            }
-        }
+            if (recipients & ((uint64)1 << i)) AddRecipient(i);
     }
-
-  private:
-    NetChannelBufType_t m_nBufType;
+private:
+    NetChannelBufType_t m_NetworkBufType;
     bool m_bInitMessage;
     CUtlVectorFixed<CPlayerSlot, 64> m_Recipients;
 };

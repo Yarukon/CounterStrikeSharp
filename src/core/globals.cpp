@@ -75,7 +75,6 @@ ISource2Server* server = nullptr;
 ISource2GameEntities* gameEntities = nullptr;
 CGlobalEntityList* globalEntityList = nullptr;
 INetworkGameServer* networkGameServer = nullptr;
-INetworkMessages* networkMessages = nullptr;
 CounterStrikeSharpMMPlugin* mmPlugin = nullptr;
 SourceHook::Impl::CSourceHookImpl source_hook_impl;
 SourceHook::ISourceHook* source_hook = &source_hook_impl;

@@ -618,7 +618,7 @@ static void UserMessageSend(ScriptContext& scriptContext)
     auto message = scriptContext.GetArgument<UserMessage*>(0);
 
     CRecipientFilter filter{};
-    filter.AddRecipientsFromMask(message->GetRecipientMask() ? *message->GetRecipientMask() : 0);
+    filter.AddRecipientsByMasking(message->GetRecipientMask() ? *message->GetRecipientMask() : 0);
 
     globals::gameEventSystem->PostEventAbstract(0, false, &filter, message->GetSerializableMessage(), message->GetProtobufMessage(), 0);
 }

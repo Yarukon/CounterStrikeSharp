@@ -18,7 +18,7 @@ public class WithUserMessagesPlugin : BasePlugin
     public override void Load(bool hotReload)
     {
         // Hooks can be added using the user message ID. In this case it's the ID for `CMsgTEFireBullets`.
-        HookUserMessage(452, um =>
+        /*HookUserMessage(452, um =>
         {
             // Sets all weapon sounds to the sound of a silenced usp.
             um.SetUInt("weapon_id", 0);
@@ -26,9 +26,9 @@ public class WithUserMessagesPlugin : BasePlugin
             um.SetUInt("item_def_index", 61);
 
             return HookResult.Continue;
-        }, HookMode.Pre);
+        }, HookMode.Pre);*/
 
-        HookUserMessage(118, um =>
+        /*HookUserMessage(118, um =>
         {
             var author = um.ReadString("param1");
             var message = um.ReadString("param2");
@@ -50,7 +50,7 @@ public class WithUserMessagesPlugin : BasePlugin
             }
 
             return HookResult.Continue;
-        });
+        });*/
     }
 
     [ConsoleCommand("css_shake")]
@@ -73,7 +73,7 @@ public class WithUserMessagesPlugin : BasePlugin
         }
         else
         {
-            message.Recipients.Add(player);
+            message.Recipients.AddRecipient(player);
         }
 
         message.Send();

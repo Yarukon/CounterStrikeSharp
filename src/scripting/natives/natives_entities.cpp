@@ -26,7 +26,7 @@
 #include "scripting/autonative.h"
 #include "scripting/script_engine.h"
 
-#include "core/recipientfilter.h"
+#include "core/recipientfilters.h"
 #include "entitykeyvalues.h"
 
 #include "core/game_system.h"

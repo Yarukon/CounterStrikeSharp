@@ -729,6 +729,30 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.CCSPlayerController.GetConVarValue(CounterStrikeSharp.API.Modules.Cvars.ConVar)</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.CCSPlayerController.GetConVarValue(System.String)</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.CCSPlayerController.SetFakeClientConVar(CounterStrikeSharp.API.Modules.Cvars.ConVar,System.String)</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.CCSPlayerController.SetFakeClientConVar(System.String,System.String)</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:CounterStrikeSharp.API.Core.CCSPlayerController_InGameMoneyServices.get_AccountMoneyEarnedForNextRound</Target>
     <Left>.\ApiCompat\v202.dll</Left>
     <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
@@ -1882,6 +1906,18 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:CounterStrikeSharp.API.Core.CSoundEventPathCornerEntity.get_BPlaying</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.NativeAPI.GetClientConvarValue(System.Int32,System.String)</Target>
+    <Left>.\ApiCompat\v202.dll</Left>
+    <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:CounterStrikeSharp.API.Core.NativeAPI.SetFakeClientConvarValue(System.Int32,System.String,System.String)</Target>
     <Left>.\ApiCompat\v202.dll</Left>
     <Right>obj\Release\net8.0\CounterStrikeSharp.API.dll</Right>
   </Suppression>
